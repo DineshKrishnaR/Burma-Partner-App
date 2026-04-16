@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "303460742327",
+    "project_id": "burmapartner",
+    "storage_bucket": "burmapartner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303460742327:android:7cb6ee6c45b2bd0e200932",
+        "android_client_info": {
+          "package_name": "com.burmapartner.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-8fQ5M9pLxCUZqEtyNAyY0yvuH93ua-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
