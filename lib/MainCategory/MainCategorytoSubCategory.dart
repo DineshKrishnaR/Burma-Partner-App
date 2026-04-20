@@ -450,13 +450,7 @@ SizedBox(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          // child: variant['stock_status'] == "Sold Out" ? Text(
-          //   "Sold Out",
-          //   style: TextStyle(color: Colors.white),
-          // ):Text(
-          //   "Out of Stock",
-          //   style: TextStyle(color: Colors.white),
-          // )
+        
            child: Text(
             // variant['stock_status'] == "Sold Out"
             //     ? "Sold Out"

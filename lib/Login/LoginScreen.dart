@@ -875,9 +875,10 @@ SizedBox(height: screenHeight*0.02,),
   controller: emailController,
   textAlign: TextAlign.left,
   textAlignVertical: TextAlignVertical.center,
-  // inputFormatters: [
-  //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-  // ],
+  inputFormatters: [
+    FilteringTextInputFormatter.deny(RegExp(r'\s')), // ❌ no spaces
+  ],
+
   decoration: InputDecoration(
     hintText: "Email *",
     isDense: true,
@@ -1214,108 +1215,240 @@ SizedBox(height: screenHeight*0.02,),
             ),
           ),
           child: ElevatedButton(
-            
             onPressed: (_isButtonLocked || isLoading)
-    ? null:
-     () async {
+    ? null
+    : () async {
 
-          setState(() {
+        // ✅ VALIDATION FIRST (NO LOADING HERE)
+        if (nameController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Name");
+          return;
+        }
+
+        if (emailController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Email");
+          return;
+        }
+
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+            .hasMatch(emailController.text)) {
+          Fluttertoast.showToast(msg: "Enter valid email");
+          return;
+        }
+
+        if (gender.isEmpty) {
+          Fluttertoast.showToast(msg: "Select Gender");
+          return;
+        }
+
+        if (address1Controller.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Address 1");
+          return;
+        }
+
+        if (address2Controller.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Address 2");
+          return;
+        }
+
+        if (areaController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Area");
+          return;
+        }
+
+        if (landmarkController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Landmark");
+          return;
+        }
+
+        if (cityController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter City");
+          return;
+        }
+
+        if (statecontroller.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Select State");
+          return;
+        }
+
+        if (pincodeController.text.isEmpty) {
+          Fluttertoast.showToast(msg: "Enter Pincode");
+          return;
+        }
+
+        if (pincodeController.text.length < 6) {
+          Fluttertoast.showToast(msg: "Enter valid Pincode");
+          return;
+        }
+
+        // ✅ START LOADING AFTER VALIDATION
+        setState(() {
           _isButtonLocked = true;
           isLoading = true;
         });
 
-              if(nameController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Name");
-              }else if(emailController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Email");
-              }else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                  .hasMatch(emailController.text)) {
-                Fluttertoast.showToast(msg: "Enter valid email");
-                return;
-              }
-              else if(gender.isEmpty){
-                Fluttertoast.showToast(msg: "Select Gender");
-              }else if(address1Controller.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Address 1");
-              }else if(address2Controller.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Address 2");
-              }else if(areaController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Area");
-              }else if(landmarkController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Landmark");
-              }else if(cityController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter City");
-              }else if(statecontroller.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter State");
-              }else if(pincodeController.text.isEmpty){
-                Fluttertoast.showToast(msg: "Enter Pincode");
-              }else if(pincodeController.text.toString().length < 6){
-                Fluttertoast.showToast(msg: "Enter valid Pincode");
-              }
-              else{
-                var data ={
-                   "action":"register_submit",
-                   "action_type":"register_save",
-                   "mobile": mobile.text.toString(),
-                   "name": nameController.text.toString(),
-                   "email":emailController.text.toString(),
-                   "gender": gender,
-                   "address":address1Controller.text.toString(),
-                   "address2":address2Controller.text.toString(),
-                   "area":areaController.text.toString(),
-                   "landmark":landmarkController.text.toString(),
-                   "city": cityController.text.toString(),
-                   "state":statecontroller.text.toString(),
-                   "pin":pincodeController.text.toString(),
-                   "wtob":"DIST",
-                   "gstno":gstnoController.text.toString(),
-                   "reference_code":referralController.text.toString(),
-                   "device_name":deviceName,
-                    "device_model": deviceModel,
-                   "os_version": osVersion,
-                   "fcm_id": fcmToken,
+        try {
+          var data = {
+            "action": "register_submit",
+            "action_type": "register_save",
+            "mobile": mobile.text.toString(),
+            "name": nameController.text.toString(),
+            "email": emailController.text.toString(),
+            "gender": gender,
+            "address": address1Controller.text.toString(),
+            "address2": address2Controller.text.toString(),
+            "area": areaController.text.toString(),
+            "landmark": landmarkController.text.toString(),
+            "city": cityController.text.toString(),
+            "state": statecontroller.text.toString(),
+            "pin": pincodeController.text.toString(),
+            "wtob": "DIST",
+            "gstno": gstnoController.text.toString(),
+            "reference_code": referralController.text.toString(),
+            "device_name": deviceName,
+            "device_model": deviceModel,
+            "os_version": osVersion,
+            "fcm_id": fcmToken,
+          };
+
+          final response = await Api().UserRegister(data);
+
+          if (response == null) {
+            Fluttertoast.showToast(msg: "Server error");
+            return;
+          }
+
+          if (response['code'] == 200) {
+            Fluttertoast.showToast(msg: response['message']);
+
+            var user = {
+              ...response['data']['user_data'],
+              "api_token": response['data']['api_token'],
+              "act_type": response['data']['user_type'],
+            };
+
+            await storage.setItem('userResponse', user);
+            await pref.setBool('isLogin', true);
+
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Homepage()),
+              (route) => false,
+            );
+          } else {
+            Fluttertoast.showToast(msg: response['message']);
+          }
+
+        } catch (e) {
+          Fluttertoast.showToast(msg: "Something went wrong");
+        } finally {
+          setState(() {
+            isLoading = false;
+            _isButtonLocked = false;
+          });
+        }
+      },
+    //         onPressed: (_isButtonLocked || isLoading)
+    // ? null:
+    //  () async {
+
+    //       setState(() {
+    //       _isButtonLocked = true;
+    //       isLoading = true;
+    //     });
+
+    //           if(nameController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Name");
+    //           }else if(emailController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Email");
+    //           }else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+    //               .hasMatch(emailController.text)) {
+    //             Fluttertoast.showToast(msg: "Enter valid email");
+    //             return;
+    //           }
+    //           else if(gender.isEmpty){
+    //             Fluttertoast.showToast(msg: "Select Gender");
+    //           }else if(address1Controller.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Address 1");
+    //           }else if(address2Controller.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Address 2");
+    //           }else if(areaController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Area");
+    //           }else if(landmarkController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Landmark");
+    //           }else if(cityController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter City");
+    //           }else if(statecontroller.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter State");
+    //           }else if(pincodeController.text.isEmpty){
+    //             Fluttertoast.showToast(msg: "Enter Pincode");
+    //           }else if(pincodeController.text.toString().length < 6){
+    //             Fluttertoast.showToast(msg: "Enter valid Pincode");
+    //           }
+    //           else{
+    //             var data ={
+    //                "action":"register_submit",
+    //                "action_type":"register_save",
+    //                "mobile": mobile.text.toString(),
+    //                "name": nameController.text.toString(),
+    //                "email":emailController.text.toString(),
+    //                "gender": gender,
+    //                "address":address1Controller.text.toString(),
+    //                "address2":address2Controller.text.toString(),
+    //                "area":areaController.text.toString(),
+    //                "landmark":landmarkController.text.toString(),
+    //                "city": cityController.text.toString(),
+    //                "state":statecontroller.text.toString(),
+    //                "pin":pincodeController.text.toString(),
+    //                "wtob":"DIST",
+    //                "gstno":gstnoController.text.toString(),
+    //                "reference_code":referralController.text.toString(),
+    //                "device_name":deviceName,
+    //                 "device_model": deviceModel,
+    //                "os_version": osVersion,
+    //                "fcm_id": fcmToken,
                   
-                };
-                final response = await Api().UserRegister(data);
-                if (response == null) { setState(() => isLoading = false); _isButtonLocked = false; return; }
-                print(response);
-                if (response['code'] == 200) {
-                Fluttertoast.showToast(msg: response['message']);
+    //             };
+    //             final response = await Api().UserRegister(data);
+    //             if (response == null) { setState(() => isLoading = false); _isButtonLocked = false; return; }
+    //             print(response);
+    //             if (response['code'] == 200) {
+    //             Fluttertoast.showToast(msg: response['message']);
 
-                var userData = response['data']['user_data'];
-                var token = response['data']['api_token'];
-                var userType = response['data']['user_type'];
+    //             var userData = response['data']['user_data'];
+    //             var token = response['data']['api_token'];
+    //             var userType = response['data']['user_type'];
 
-                /// ✅ CLEAN USER OBJECT
-                var user = {
-                  ...userData,
-                  "api_token": token,
-                  "act_type": userType,
-                };
+    //             /// ✅ CLEAN USER OBJECT
+    //             var user = {
+    //               ...userData,
+    //               "api_token": token,
+    //               "act_type": userType,
+    //             };
 
-                /// ✅ SAVE CLEAN DATA
-                await storage.setItem('userResponse', user);
-                await pref.setBool('isLogin', true);
+    //             /// ✅ SAVE CLEAN DATA
+    //             await storage.setItem('userResponse', user);
+    //             await pref.setBool('isLogin', true);
 
-                /// ✅ NAVIGATE (IMPORTANT)
-                // Navigator.pushAndRemoveUntil(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => Dashboard()),
-                //   (route) => false,
-                // );
-                 Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => Dashboard()),
-                    (route) => false,
-                  );
-              }else{
-                Fluttertoast.showToast(msg: response['message'].toString());
+    //             /// ✅ NAVIGATE (IMPORTANT)
+    //             // Navigator.pushAndRemoveUntil(
+    //             //   context,
+    //             //   MaterialPageRoute(builder: (context) => Dashboard()),
+    //             //   (route) => false,
+    //             // );
+    //              Navigator.pushAndRemoveUntil(
+    //                 context,
+    //                 MaterialPageRoute(builder: (context) => Dashboard()),
+    //                 (route) => false,
+    //               );
+    //           }else{
+    //             Fluttertoast.showToast(msg: response['message'].toString());
                
-              }
-               setState(() => isLoading = false);
-               _isButtonLocked = false;
-              }
-            },
+    //           }
+    //            setState(() => isLoading = false);
+    //            _isButtonLocked = false;
+    //           }
+    //         },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,

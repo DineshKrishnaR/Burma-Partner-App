@@ -320,10 +320,31 @@ Widget buildProductCard(var p, var variant) {
             SizedBox(
   width: double.infinity,
   height: 34,
-  child:  (variant != null &&
-        (variant['stock_status'] == "Sold Out" ||
-         variant['stock_status'] == "No Stock"))?
-                        ElevatedButton(
+  child: 
+  //  (variant != null &&
+  //       (variant['stock_status'] == "Sold Out" ||
+  //        variant['stock_status'] == "No Stock"))?
+  //                       ElevatedButton(
+                         
+  //         onPressed: null,
+  //         style: ElevatedButton.styleFrom(
+  //           backgroundColor: Colors.grey,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //           ),
+  //         ),
+
+  //          child: Text(
+  //           variant['stock_status'] == "Sold Out"
+  //               ? "Sold Out"
+  //               : variant['stock_status'] == "No Stock"
+  //                   ? "Out of Stock"
+  //                   : "Shop Closed",
+  //           style: const TextStyle(color: Colors.white),
+  //         ),
+        
+  //       )
+       (variant['stock_status'] != "Available")?  ElevatedButton(
                          
           onPressed: null,
           style: ElevatedButton.styleFrom(
@@ -332,24 +353,10 @@ Widget buildProductCard(var p, var variant) {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          // child: variant['stock_status'] == "Sold Out" ? Text(
-          //   "Sold Out",
-          //   style: TextStyle(color: Colors.white),
-          // ):Text(
-          //   "Out of Stock",
-          //   style: TextStyle(color: Colors.white),
-          // )
-           child: Text(
-            variant['stock_status'] == "Sold Out"
-                ? "Sold Out"
-                : variant['stock_status'] == "No Stock"
-                    ? "Out of Stock"
-                    : "Shop Closed",
-            style: const TextStyle(color: Colors.white),
+          child: Text("Buy Now",
+          style: TextStyle(color: Colors.white),
           ),
-        
         )
-      
          : ElevatedButton(
               onPressed: () async{
                 // updateCart(variantId, 1);

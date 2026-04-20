@@ -47,12 +47,12 @@ class _SearchPageState extends State<SearchPage> {
     });
 
     var data = {
-      "action": "search_products",
+      "action": "get_productlist_by_searchterm",
       "accesskey": "90336",
       "token": accesstoken,
       "act_type": userResponse['act_type'].toString(),
-      "customer_id": customer_id.toString(),
-      "keyword": keyword.trim(),
+      // "customer_id": customer_id.toString(),
+      "search_term": keyword.trim(),
     };
 
     final response = await DashboardApi().SearchProducts(data);
@@ -82,6 +82,16 @@ class _SearchPageState extends State<SearchPage> {
             hintStyle: TextStyle(color: Colors.white70),
             border: InputBorder.none,
           ),
+          onChanged: (value) {
+            if (value.trim().length >= 3) {
+              _search(value);
+            } else {
+              setState(() {
+                results = [];
+                hasSearched = false;
+              });
+            }
+          },
           onSubmitted: _search,
           textInputAction: TextInputAction.search,
         ),

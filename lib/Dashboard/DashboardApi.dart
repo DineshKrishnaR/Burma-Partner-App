@@ -60,7 +60,7 @@ class DashboardApi {
       NetworkHandler.safePost(Uri.parse(base_url + getcertification), headers: _headers(), body: body);
 
    Future<Map<String, dynamic>?> SearchProducts(Map<String, dynamic> body) =>
-      NetworkHandler.safePost(Uri.parse(base_url + searchproduct), headers: _headers(), body: body);   
+      NetworkHandler.safePost(Uri.parse(base_url + searchproducts), headers: _headers(), body: body);   
 
   Future<Map<String, dynamic>?> getApi(String endpoint) =>
       NetworkHandler.safeGet(Uri.parse(base_url + endpoint), headers: _headers());

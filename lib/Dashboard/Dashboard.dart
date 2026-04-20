@@ -6,6 +6,7 @@ import 'package:burmapartner/Common/FirebaseApi.dart';
 import 'package:burmapartner/Dashboard/DashboardApi.dart';
 import 'package:burmapartner/Dashboard/Dashboardmenu.dart';
 import 'package:burmapartner/Dashboard/HomePage.dart';
+import 'package:burmapartner/Dashboard/SearchPage.dart';
 import 'package:burmapartner/HomeFeatureSections/HomeFeatureSectionMainCat.dart';
 import 'package:burmapartner/HomeFeatureSections/HomeFeatureSectionProductGrid.dart';
 import 'package:burmapartner/HomeFeatureSections/HomeFeatureSectionSubCategory.dart';
@@ -391,37 +392,37 @@ Future<void> HomeFeatureSections() async {
                 child: Column(
                   children: [
                       /// 🔍 SEARCH
-                  // GestureDetector(
-                  //   onTap: () => Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(builder: (context) => const SearchPage()),
-                  //   ),
-                  //   child: Container(
-                  //     margin: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                  //     padding: const EdgeInsets.symmetric(horizontal: 15),
-                  //     height: 50,
-                  //     decoration: BoxDecoration(
-                  //       color: Colors.white,
-                  //       borderRadius: BorderRadius.circular(30),
-                  //       boxShadow: [
-                  //         BoxShadow(
-                  //           color: Colors.black.withOpacity(0.06),
-                  //           blurRadius: 15,
-                  //           offset: const Offset(0, 4),
-                  //         )
-                  //       ],
-                  //       border: Border.all(color: Colors.grey.shade200),
-                  //     ),
-                  //     child: Row(
-                  //       children: [
-                  //         Icon(Icons.search, color: Colors.grey.shade500),
-                  //         const SizedBox(width: 10),
-                  //         Text("Search products...",
-                  //             style: TextStyle(color: Colors.grey.shade500, fontSize: 15)),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SearchPage()),
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 15,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, color: Colors.grey.shade500),
+                          const SizedBox(width: 10),
+                          Text("Search products...",
+                              style: TextStyle(color: Colors.grey.shade500, fontSize: 15)),
+                        ],
+                      ),
+                    ),
+                  ),
                     SizedBox(height: screenHeight*0.02,),
                   //   Container(
                   //   margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -968,10 +969,29 @@ SizedBox(
   child: 
   // qty == 0
   //     ? 
-   (variant != null &&
-        (variant['stock_status'] == "Sold Out" ||
-         variant['stock_status'] == "No Stock"))?
-                        ElevatedButton(
+  //  (variant != null &&
+  //       (variant['stock_status'] == "Sold Out" ||
+  //        variant['stock_status'] == "No Stock"))?
+  //                       ElevatedButton(
+                         
+  //         onPressed: null,
+  //         style: ElevatedButton.styleFrom(
+  //           backgroundColor: Colors.grey,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //           ),
+  //         ),
+         
+  //         child: Text(
+  //           variant['stock_status'] == "Sold Out"
+  //               ? "Sold Out"
+  //               : variant['stock_status'] == "No Stock"
+  //                   ? "Out of Stock"
+  //                   : "Shop Closed",
+  //           style: const TextStyle(color: Colors.white),
+  //         ),
+  //       ):
+   (variant['stock_status'] != "Available")?  ElevatedButton(
                          
           onPressed: null,
           style: ElevatedButton.styleFrom(
@@ -980,20 +1000,8 @@ SizedBox(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          // child: variant['stock_status'] == "Sold Out" ? Text(
-          //   "Sold Out",
-          //   style: TextStyle(color: Colors.white),
-          // ):Text(
-          //   "Out of Stock",
-          //   style: TextStyle(color: Colors.white),
-          // )
-          child: Text(
-            variant['stock_status'] == "Sold Out"
-                ? "Sold Out"
-                : variant['stock_status'] == "No Stock"
-                    ? "Out of Stock"
-                    : "Shop Closed",
-            style: const TextStyle(color: Colors.white),
+          child: Text("Buy Now",
+          style: TextStyle(color: Colors.white),
           ),
         ):
       ElevatedButton(

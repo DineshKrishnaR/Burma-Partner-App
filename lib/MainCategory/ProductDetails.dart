@@ -12,6 +12,7 @@ import 'package:burmapartner/MainCategory/MainSubCattoProduct.dart';
 import 'package:burmapartner/MainCategory/ProductApi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,6 +62,7 @@ final LocalStorage storage = new LocalStorage('app_store');
   var selectedVariant;
   Map<String, int> cartQty = {};
   bool isProcessingCart = false;
+  bool isDescriptionExpanded = false;
   @override
   void initState() {
     super.initState();
@@ -886,7 +888,7 @@ bool isOutOfStock =
                                   ],
                                 ),
                               ),
-                                      
+                            
                               /// VARIANTS CARD
                               if (product_varient != null && product_varient.isNotEmpty)
                                 Container(
@@ -1024,7 +1026,83 @@ bool isOutOfStock =
                                     }),
                                   ),
                                 ),
-                                      
+                                        /// 🔥 PRODUCT DESCRIPTION (HTML)
+                                      if (product['description'] != null &&
+                                          product['description'].toString().isNotEmpty)
+                                        Container(
+                                          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(16),
+                                            boxShadow: const [
+                                              BoxShadow(color: Colors.black12, blurRadius: 8)
+                                            ],
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+
+                                              /// 🔥 HEADER WITH ARROW
+                                              InkWell(
+                                                onTap: () {
+                                                  setState(() {
+                                                    isDescriptionExpanded = !isDescriptionExpanded;
+                                                  });
+                                                },
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text(
+                                                      "Product Details",
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+
+                                                    /// 🔽 ARROW ICON
+                                                    AnimatedRotation(
+                                                      turns: isDescriptionExpanded ? 0.5 : 0,
+                                                      duration: const Duration(milliseconds: 300),
+                                                      child: const Icon(Icons.keyboard_arrow_down),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              /// 🔥 EXPAND CONTENT
+                                              AnimatedCrossFade(
+                                                duration: const Duration(milliseconds: 300),
+                                                crossFadeState: isDescriptionExpanded
+                                                    ? CrossFadeState.showSecond
+                                                    : CrossFadeState.showFirst,
+
+                                                firstChild: const SizedBox(), // collapsed
+
+                                                secondChild: Column(
+                                                  children: [
+                                                    const SizedBox(height: 10),
+
+                                                    Html(
+                                                      data: product['description'],
+                                                      style: {
+                                                        "*": Style(
+                                                          fontSize: FontSize(14),
+                                                          color: Colors.black87,
+                                                          lineHeight: LineHeight(1.5),
+                                                        ),
+                                                        "ul": Style(
+                                                          padding: HtmlPaddings.only(left: 16),
+                                                        ),
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                               /// RELATED PRODUCTS SECTION
                               if (relatedProducts.isNotEmpty)
                                 Column(
@@ -1106,7 +1184,7 @@ bool isOutOfStock =
                                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                 ): Text(
                             // isOutOfStock ? "Out of Stock" : "Buy Now",
-                              isOutOfStock ? "Out of Stock" : "Add to Cart",
+                              isOutOfStock ? "Add to Cart" : "Add to Cart",
                             style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

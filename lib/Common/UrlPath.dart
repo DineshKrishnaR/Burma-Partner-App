@@ -68,4 +68,4 @@ String getreferalcustomerreport = 'sales_info.php';
 
 
 // Search Product
-String searchproduct = 'search.php';
+String searchproducts = 'site_dtl.php';
