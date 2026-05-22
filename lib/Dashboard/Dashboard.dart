@@ -13,7 +13,7 @@ import 'package:burmapartner/HomeFeatureSections/HomeFeatureSectionSubCategory.d
 import 'package:burmapartner/HomeFeatureSections/HomeFeatureSectionsCategory.dart';
 import 'package:burmapartner/MainCategory/MainCategorytoSubCategory.dart';
 import 'package:burmapartner/MainCategory/ProductDetails.dart';
-import 'package:burmapartner/Notification/Notification.dart';
+import 'package:burmapartner/Notification/Notifications.dart';
 import 'package:burmapartner/MainCategory/MainCategorytoCategory.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/foundation.dart';
@@ -22,6 +22,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 import '../Api/Api.dart';
 
@@ -79,16 +80,16 @@ void dispose() {
     accesstoken = userResponse['api_token'];
     customer_id = userResponse['customer_id'].toString();
   }
-      var device_info = await Device().initPlatformState();
-      device_id = await storage.getItem('device_id');
-      deviceName = storage.getItem('device_name') ?? "";
-      deviceModel = storage.getItem('device_model') ?? "";
-      osVersion = storage.getItem('os_version') ?? "";
-      await FirebaseApi().initNotifications();  
-      fcmToken = await storage.getItem('fcmToken');
-      // await  storage.deleteItem('cartItems');
-      print('FCM Token: $fcmToken');
-      print('Device ID: $device_id');
+      // var device_info = await Device().initPlatformState();
+      // device_id = await storage.getItem('device_id');
+      // deviceName = storage.getItem('device_name') ?? "";
+      // deviceModel = storage.getItem('device_model') ?? "";
+      // osVersion = storage.getItem('os_version') ?? "";
+      // await FirebaseApi().initNotifications();  
+      // fcmToken = await storage.getItem('fcmToken');
+      // // await  storage.deleteItem('cartItems');
+      // print('FCM Token: $fcmToken');
+      // print('Device ID: $device_id');
       // await PopupOfferImage();
       setState(() => isLoading = true);
       await HomeBanner();
@@ -166,10 +167,34 @@ void dispose() {
 //   }
 // }
 
-  Future<void> loadCartQty() async {
-  final box = Hive.box('cart');
+//   Future<void> loadCartQty() async {
+//   final box = Hive.box('cart');
 
-  List<dynamic> cartList = box.get('cartItems', defaultValue: []);
+//   List<dynamic> cartList = box.get('cartItems', defaultValue: []);
+
+//   cartQty.clear();
+
+//   for (var item in cartList) {
+//     cartQty[item['product_variant_id'].toString()] =
+//         int.parse(item['qty'].toString());
+//   }
+
+//   setState(() {});
+// }
+
+Future<void> loadCartQty() async {
+
+  /// OPEN BOX IF NOT OPENED
+  Box box;
+
+  if (Hive.isBoxOpen('cart')) {
+    box = Hive.box('cart');
+  } else {
+    box = await Hive.openBox('cart');
+  }
+
+  List<dynamic> cartList =
+      box.get('cartItems', defaultValue: []);
 
   cartQty.clear();
 
@@ -178,9 +203,10 @@ void dispose() {
         int.parse(item['qty'].toString());
   }
 
-  setState(() {});
+  if (mounted) {
+    setState(() {});
+  }
 }
-
 void showOfferPopup() {
   showDialog(
     context: context,
@@ -329,7 +355,7 @@ Future<void> HomeFeatureSections() async {
         appBar: AppBar(
           backgroundColor: custom_color.app_color,
           elevation: 0,
-          title: const Text("Produtes",style: TextStyle(color: Colors.white)),
+          title: const Text("Products",style: TextStyle(color: Colors.white)),
          leading: Builder(
             builder: (context) {
               return IconButton(
@@ -352,7 +378,8 @@ Future<void> HomeFeatureSections() async {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => Cart(selected_data : '',selecteddata_title : ""))).then((_) => loadCartQty());
                 },
               ),
-              if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+              // if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+               if (cartQty.length > 0)
                 Positioned(
                   right: 6,
                   top: 6,
@@ -363,7 +390,8 @@ Future<void> HomeFeatureSections() async {
                       shape: BoxShape.circle,
                     ),
                     child: Text(
-                      cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                      // cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                       cartQty.length.toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -373,24 +401,87 @@ Future<void> HomeFeatureSections() async {
             ]
         ),
       
-        body: isLoading
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/images/AppLogo.png",
-                      width: 100,
-                      height: 100,
-                    ),
-                     SizedBox(height: 20),
-                     CircularProgressIndicator(color: custom_color.app_color,),
-                  ],
+        body: SafeArea(child: isLoading ? _buildShimmer() : _buildContent()),
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar
+            Container(height: 50, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30))),
+            const SizedBox(height: 20),
+            // Section title
+            Container(width: 160, height: 18, color: Colors.white),
+            const SizedBox(height: 15),
+            // Category grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 6,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 15,
+                crossAxisSpacing: 15,
+                childAspectRatio: .9,
+              ),
+              itemBuilder: (_, __) => Container(
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Section title
+            Container(width: 140, height: 18, color: Colors.white),
+            const SizedBox(height: 12),
+            // Horizontal list skeleton
+            SizedBox(
+              height: 140,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 4,
+                itemBuilder: (_, __) => Container(
+                  width: 120,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                 ),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Section title
+            Container(width: 120, height: 18, color: Colors.white),
+            const SizedBox(height: 12),
+            // Product horizontal skeleton
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 3,
+                itemBuilder: (_, __) => Container(
+                  width: 170,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    double screenHeight = MediaQuery.of(context).size.height;
+    return SingleChildScrollView(
+        child: Column(
+          children: [
                       /// 🔍 SEARCH
                   GestureDetector(
                     onTap: () => Navigator.push(
@@ -617,8 +708,16 @@ Future<void> HomeFeatureSections() async {
                     const SizedBox(height: 20),
       
       Column(
-        children: homeSections.asMap().entries.map((entry) {
-      
+        // children: homeSections.asMap().entries.map((entry) {
+      children: homeSections
+      .where((section) {
+        var data = section['data'];
+        return data != null && data is List && data.isNotEmpty;
+      })
+      .toList()
+      .asMap()
+      .entries
+      .map((entry) {
       int sectionIndex = entry.key;
       var section = entry.value;
       
@@ -663,14 +762,14 @@ Future<void> HomeFeatureSections() async {
               print("View all clicked");
               print(section);
       
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => Sectionproducts(
-              //       selected_data: section,
-              //     ),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Homefeaturesectionproductgrid(
+                    selected_data: section,
+                  ),
+                ),
+              );
             },
             child: Row(
               children: const [
@@ -725,20 +824,7 @@ Future<void> HomeFeatureSections() async {
       )
                   ],
                 ),
-              ),
-      
-                // floatingActionButton: FloatingActionButton(
-                //   backgroundColor: const Color(0xFF25D366),
-                //   onPressed: () {
-                //     print("WhatsApp click");
-                //   },
-                //   child: const FaIcon(
-                //     FontAwesomeIcons.whatsapp,
-                //     color: Colors.white,
-                //   ),
-                // ),
-      ),
-    );
+              );
   }
 
 Widget buildHorizontalProducts(List products, int sectionIndex) {
@@ -774,7 +860,7 @@ Map? getLowestVariant(List vars) {
   }
 
   return SizedBox(
-    height: 260,
+    height: 310,
     child: ListView.builder(
       controller: _horizontalControllers[sectionIndex],
       scrollDirection: Axis.horizontal,
@@ -821,20 +907,307 @@ Map? getLowestVariant(List vars) {
   );
 }
 
-Widget buildHorizontalProductCard(var p, var variant) {
-  String sizeText = "";
+// Widget buildHorizontalProductCard(var p, var variant) {
+//   String sizeText = "";
 
+// if (variant != null && variant['size'] != null) {
+//   // sizeText = variant['size'];
+//   sizeText = variant['size'].toString().split(',')[0];
+//   print(sizeText);
+// }
+//   String variantId = variant?['product_variant_id']?.toString() ?? "";
+// int qty = cartQty[variantId] ?? 0;
+
+//   return GestureDetector(
+//      onTap: () {
+     
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title :""),
+//         ),
+//       );
+//     },
+//     child: Container(
+//       // decoration: BoxDecoration(
+//       //   color: Colors.white,
+//       //   borderRadius: BorderRadius.circular(18),
+//       //   boxShadow: [
+//       //     BoxShadow(
+//       //       color: Colors.black.withOpacity(.05),
+//       //       blurRadius: 12,
+//       //       offset: const Offset(0, 5),
+//       //     )
+//       //   ],
+//       // ),
+//        decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 12, offset: const Offset(0, 4))],
+//           border: Border(
+//             right: BorderSide(color: Colors.grey.shade300, width: 3),
+//             bottom: BorderSide(color: Colors.grey.shade300, width: 3),
+//           ),
+//         ),
+//       child: Padding(
+//         padding: const EdgeInsets.all(10),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+    
+//             /// 🔥 IMAGE + DISCOUNT BADGE
+//             Expanded(
+//               child: Center(
+//               child: safeNetworkImage(
+//                      p['prod_img'],
+//                      fit: BoxFit.contain,
+//               ),
+//                         ),
+//                     ),
+//             /// Discount badge
+//             // if (variant != null &&
+//             //     variant['disc_amt'] != "0")
+//             //   Positioned(
+//             //     top: 0,
+//             //     left: 0,
+//             //     child: Container(
+//             //       padding: const EdgeInsets.symmetric(
+//             //           horizontal: 6, vertical: 3),
+//             //       decoration: BoxDecoration(
+//             //         color: Colors.red,
+//             //         borderRadius: BorderRadius.circular(6),
+//             //       ),
+//             //       child: Text(
+//             //         "${variant['disc_amt']} OFF",
+//             //         style: const TextStyle(
+//             //           color: Colors.white,
+//             //           fontSize: 10,
+//             //           fontWeight: FontWeight.bold,
+//             //         ),
+//             //       ),
+//             //     ),
+//             //   ),
+//              const SizedBox(height: 6),
+//              if (variant != null &&
+//                 variant['disc_amt'] != "0")
+//               Positioned(
+//                 top: 0,
+//                 left: 0,
+//                 child: Container(
+//                   padding: const EdgeInsets.symmetric(
+//                       horizontal: 6, vertical: 3),
+//                   decoration: BoxDecoration(
+//                     color: Colors.red,
+//                     borderRadius: BorderRadius.circular(6),
+//                   ),
+//                   child: Text(
+//                     // "${variant['disc_amt']} OFF",
+//                     variant['disc_type'] == "Amount"
+//                     ? "₹ ${(double.parse(variant['price'].toString()) - double.parse(variant['discounted_price'].toString())).toStringAsFixed(0)} OFF"
+//                     : "${(((double.parse(variant['price'].toString()) - double.parse(variant['discounted_price'].toString())) / double.parse(variant['price'].toString())) * 100).round()}% OFF",
+//                     style: const TextStyle(
+//                       color: Colors.white,
+//                       fontSize: 10,
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                 ),
+//               ),
+    
+//             const SizedBox(height: 8),
+    
+//             /// 🔥 PRODUCT NAME
+//             // Text("",
+//             //   // p['name'] ?? "",
+//             //   maxLines: 2,
+//             //   overflow: TextOverflow.ellipsis,
+//             //   style: const TextStyle(
+//             //     fontWeight: FontWeight.w600,
+//             //     fontSize: 13,
+//             //   ),
+//             // ),
+//             SizedBox(
+//   height: 36,
+//   child: Text(
+//     p['name'] ?? "",
+//     maxLines: 2,
+//     overflow: TextOverflow.ellipsis,
+//     style: const TextStyle(
+//       fontWeight: FontWeight.w600,
+//       fontSize: 13,
+//       height: 1.3,
+//       color: Colors.black87,
+//     ),
+//   ),
+// ),
+
+//     // const SizedBox(height: 4),
+    
+//     // if (sizeText.isNotEmpty)
+//     // Container(
+//     //   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+//     //   decoration: BoxDecoration(
+//     //     color: Colors.grey.shade100,
+//     //     borderRadius: BorderRadius.circular(6),
+//     //   ),
+//     //   child: Text(
+//     //     sizeText,
+//     //     style: const TextStyle(
+//     //       fontSize: 11,
+//     //       color: Colors.black87,
+//     //       fontWeight: FontWeight.w500,
+//     //     ),
+//     //   ),
+//     // ),
+//             // const SizedBox(height: 4),
+    
+//             /// 🔥 PRICE ROW
+//             if (variant != null)
+//               Row(
+//                 children: [
+//                   Text(
+//                     "₹ ${variant['discounted_price']}",
+//                     style: TextStyle(
+//                       fontWeight: FontWeight.bold,
+//                       fontSize: 14,
+//                       color: custom_color.app_color,
+//                     ),
+//                   ),
+//                   const SizedBox(width: 6),
+//                   if (variant['disc_amt'] != "0")
+//                     Text(
+//                       "₹ ${variant['price']}",
+//                       style: const TextStyle(
+//                         decoration: TextDecoration.lineThrough,
+//                         color: Colors.grey,
+//                         fontSize: 11,
+//                       ),
+//                     ),
+//                 ],
+//               ),
+    
+//             const SizedBox(height: 8),
+    
+// SizedBox(
+//   width: double.infinity,
+//   height: 34,
+//   child: 
+//   // qty == 0
+//   //     ? 
+//   //  (variant != null &&
+//   //       (variant['stock_status'] == "Sold Out" ||
+//   //        variant['stock_status'] == "No Stock"))?
+//   //                       ElevatedButton(
+                         
+//   //         onPressed: null,
+//   //         style: ElevatedButton.styleFrom(
+//   //           backgroundColor: Colors.grey,
+//   //           shape: RoundedRectangleBorder(
+//   //             borderRadius: BorderRadius.circular(10),
+//   //           ),
+//   //         ),
+         
+//   //         child: Text(
+//   //           variant['stock_status'] == "Sold Out"
+//   //               ? "Sold Out"
+//   //               : variant['stock_status'] == "No Stock"
+//   //                   ? "Out of Stock"
+//   //                   : "Shop Closed",
+//   //           style: const TextStyle(color: Colors.white),
+//   //         ),
+//   //       ):
+//    (variant['stock_status'] != "Available")?  ElevatedButton(
+                         
+//           onPressed: null,
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: Colors.grey,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//           ),
+//           child: Text("Buy Now",
+//           style: TextStyle(color: Colors.white),
+//           ),
+//         ):
+//       ElevatedButton(
+//           onPressed: () {
+//             // updateCart(variantId, 1);
+//              Navigator.push(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title:""),
+//         ),
+//       );
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: custom_color.button_color,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//           ),
+//           child: const Text(
+//             "Buy Now",
+//             style: TextStyle(color: Colors.white),
+//           ),
+//         )
+//       // : Container(
+//       //     decoration: BoxDecoration(
+//       //       color: custom_color.app_color,
+//       //       borderRadius: BorderRadius.circular(10),
+//       //     ),
+//       //     child: Row(
+//       //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+//       //       children: [
+
+//       //         /// MINUS
+//       //         GestureDetector(
+//       //           onTap: () {
+//       //             updateCart(variantId, qty - 1);
+//       //           },
+//       //           child: const Icon(Icons.remove, color: Colors.white),
+//       //         ),
+
+//       //         /// QTY
+//       //         Text(
+//       //           qty.toString(),
+//       //           style: const TextStyle(
+//       //               color: Colors.white, fontWeight: FontWeight.bold),
+//       //         ),
+
+//       //         /// PLUS
+//       //         GestureDetector(
+//       //           onTap: () {
+//       //             updateCart(variantId, qty + 1);
+//       //           },
+//       //           child: const Icon(Icons.add, color: Colors.white),
+//       //         ),
+//       //       ],
+//       //     ),
+//       //   ),
+// )
+//           ],
+//         ),
+//       ),
+//     ),
+//   );
+// }
+
+Widget buildHorizontalProductCard(var p, var variant) {
+  double screenHeight = MediaQuery.of(context).size.height;
+  String sizeText = "";
 if (variant != null && variant['size'] != null) {
-  // sizeText = variant['size'];
   sizeText = variant['size'].toString().split(',')[0];
   print(sizeText);
 }
   String variantId = variant?['product_variant_id']?.toString() ?? "";
 int qty = cartQty[variantId] ?? 0;
+  bool isAvailable = variant != null && variant['stock_status'] == "Available";
+  bool hasDiscount = variant != null && variant['disc_amt'] != "0";
+
   return GestureDetector(
-     onTap: () {
+    onTap: () {
      
-      Navigator.push(
+        Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title :""),
@@ -846,222 +1219,109 @@ int qty = cartQty[variantId] ?? 0;
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.05),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
-          )
+          BoxShadow(color: Colors.grey.withOpacity(0.2), offset: Offset(3, 3), blurRadius: 6),
         ],
+        border: Border(
+          right: BorderSide(color: Colors.grey.shade300, width: 3),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 3),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-    
-            /// 🔥 IMAGE + DISCOUNT BADGE
-            Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+            child: SizedBox(
+              height: 140,
+              width: double.infinity,
               child: Stack(
                 children: [
-    
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      // child: Image.network(
-                      //   p['prod_img'] ?? "",
-                      //   fit: BoxFit.contain,
-                      //   errorBuilder: (_, __, ___) =>
-                      //       const Icon(Icons.image_not_supported),
-                      // ),
-                      child: safeNetworkImage(p['prod_img'], fit: BoxFit.contain),
-                    ),
-                  ),
-    
-                  /// Discount badge
-                  if (variant != null &&
-                      variant['disc_amt'] != "0")
+                  Center(child: safeNetworkImage(p['prod_img'], fit: BoxFit.contain)),
+                  if (isAvailable && variant != null && variant['disc_amt'] != "0")
                     Positioned(
-                      top: 0,
-                      left: 0,
+                      top: 0, left: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: const BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(6)),
                         ),
                         child: Text(
-                          "${variant['disc_amt']} OFF",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          variant['disc_type'] == "Amount"
+                              ? "₹ ${(double.parse(variant['price'].toString()) - double.parse(variant['discounted_price'].toString())).toStringAsFixed(0)} OFF"
+                              : "${(((double.parse(variant['price'].toString()) - double.parse(variant['discounted_price'].toString())) / double.parse(variant['price'].toString())) * 100).round()}% OFF",
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-    
-            const SizedBox(height: 8),
-    
-            /// 🔥 PRODUCT NAME
-            Text(
-              p['name'] ?? "",
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
-    // const SizedBox(height: 4),
-    
-    if (sizeText.isNotEmpty)
-    Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        sizeText,
-        style: const TextStyle(
-          fontSize: 11,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-            // const SizedBox(height: 4),
-    
-            /// 🔥 PRICE ROW
-            if (variant != null)
-              Row(
-                children: [
-                  Text(
-                    "₹ ${variant['discounted_price']}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: custom_color.app_color,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  if (variant['disc_amt'] != "0")
-                    Text(
-                      "₹ ${variant['price']}",
-                      style: const TextStyle(
-                        decoration: TextDecoration.lineThrough,
-                        color: Colors.grey,
-                        fontSize: 11,
+                  if (!isAvailable)
+                    Positioned(
+                      top: 0, right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6)),
+                        ),
+                        child: const Text("Out of Stock",
+                            style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                     ),
                 ],
               ),
-    
-            const SizedBox(height: 8),
-    
-SizedBox(
-  width: double.infinity,
-  height: 34,
-  child: 
-  // qty == 0
-  //     ? 
-  //  (variant != null &&
-  //       (variant['stock_status'] == "Sold Out" ||
-  //        variant['stock_status'] == "No Stock"))?
-  //                       ElevatedButton(
-                         
-  //         onPressed: null,
-  //         style: ElevatedButton.styleFrom(
-  //           backgroundColor: Colors.grey,
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //           ),
-  //         ),
-         
-  //         child: Text(
-  //           variant['stock_status'] == "Sold Out"
-  //               ? "Sold Out"
-  //               : variant['stock_status'] == "No Stock"
-  //                   ? "Out of Stock"
-  //                   : "Shop Closed",
-  //           style: const TextStyle(color: Colors.white),
-  //         ),
-  //       ):
-   (variant['stock_status'] != "Available")?  ElevatedButton(
-                         
-          onPressed: null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          child: Text("Buy Now",
-          style: TextStyle(color: Colors.white),
-          ),
-        ):
-      ElevatedButton(
-          onPressed: () {
-            // updateCart(variantId, 1);
-             Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title:""),
-        ),
-      );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: custom_color.button_color,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+          SizedBox(height: screenHeight*0.01,),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 34,
+                    child: Text(p['name'] ?? "", maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  ),
+                  SizedBox(height: screenHeight*0.01,),
+                  SizedBox(
+                    height: 20,
+                    child: variant != null
+                        ? Row(children: [
+                            Text("₹ ${double.tryParse(variant['discounted_price'].toString())?.toStringAsFixed(0) ?? variant['discounted_price']}",
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: custom_color.app_color)),
+                            const SizedBox(width: 6),
+                            if (hasDiscount)
+                              Text("₹ ${double.tryParse(variant['price'].toString())?.toStringAsFixed(0) ?? variant['price']}",
+                                  style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 11)),
+                          ])
+                        : const SizedBox(),
+                  ),
+                  // const Spacer(),
+                  SizedBox(height: screenHeight*0.01,),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 34,
+                    child: ElevatedButton(
+                      onPressed: isAvailable
+                          ? () => Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => Maincategoryproductdetails(selected_data: p, selecteddata_title: ""),
+                              ))
+                              
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isAvailable ? custom_color.button_color : Colors.grey,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text(isAvailable ? "Buy Now" : "Unavailable",
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: const Text(
-            "Buy Now",
-            style: TextStyle(color: Colors.white),
-          ),
-        )
-      // : Container(
-      //     decoration: BoxDecoration(
-      //       color: custom_color.app_color,
-      //       borderRadius: BorderRadius.circular(10),
-      //     ),
-      //     child: Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      //       children: [
-
-      //         /// MINUS
-      //         GestureDetector(
-      //           onTap: () {
-      //             updateCart(variantId, qty - 1);
-      //           },
-      //           child: const Icon(Icons.remove, color: Colors.white),
-      //         ),
-
-      //         /// QTY
-      //         Text(
-      //           qty.toString(),
-      //           style: const TextStyle(
-      //               color: Colors.white, fontWeight: FontWeight.bold),
-      //         ),
-
-      //         /// PLUS
-      //         GestureDetector(
-      //           onTap: () {
-      //             updateCart(variantId, qty + 1);
-      //           },
-      //           child: const Icon(Icons.add, color: Colors.white),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-)
-          ],
-        ),
+        ],
       ),
     ),
   );
@@ -1069,16 +1329,16 @@ SizedBox(
 Widget buildProductCard(var p, var variant) {
   return Container(
     decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(.05),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        )
-      ],
-    ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.2), offset: Offset(3, 3), blurRadius: 6),
+        ],
+        border: Border(
+          right: BorderSide(color: Colors.grey.shade300, width: 3),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 3),
+        ),
+      ),
     child: Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -1621,6 +1881,66 @@ Widget buildSubCategoryGridStyleHorizontal(List categories, int sectionIndex, ty
     ),
   );
 }
+// Widget safeNetworkImage(
+//   String? url, {
+//   double? width,
+//   double? height,
+//   BoxFit fit = BoxFit.cover,
+//   double borderRadius = 0,
+// }) {
+//   // Fix double slashes in URL
+//   String cleanUrl = (url ?? "").replaceAll(RegExp(r'(?<!:)//+'), '/');
+  
+//   // Check if URL is valid
+//   if (cleanUrl.isEmpty || !cleanUrl.startsWith('http')) {
+//     return SizedBox(
+//       width: width,
+//       height: height,
+//       child: Image.asset(
+//         "assets/images/AppLogo.png",
+//         width: 90,
+//         height: 90,
+//         fit: BoxFit.contain,
+//       ),
+//     );
+//   }
+
+//   return ClipRRect(
+//     borderRadius: BorderRadius.circular(borderRadius),
+//     child: SizedBox(
+//       width: width,
+//       height: height,
+//       child: Image.network(
+//         cleanUrl,
+//         fit: fit,
+//         loadingBuilder: (context, child, loadingProgress) {
+//           if (loadingProgress == null) return child;
+//           return Center(
+//             child: Image.asset(
+//               "assets/images/AppLogo.png",
+//               width: 90,
+//               height: 90,
+//               fit: BoxFit.contain,
+//             ),
+//           );
+//         },
+//         errorBuilder: (context, error, stackTrace) {
+//           return SizedBox(
+//             width: width,
+//             height: height,
+//             child: Image.asset(
+//               "assets/images/AppLogo.png",
+//               width: 90,
+//               height: 90,
+//               fit: BoxFit.contain,
+//             ),
+//           );
+//         },
+//       ),
+//     ),
+//   );
+// }
+
 Widget safeNetworkImage(
   String? url, {
   double? width,
@@ -1628,30 +1948,13 @@ Widget safeNetworkImage(
   BoxFit fit = BoxFit.cover,
   double borderRadius = 0,
 }) {
-  // Fix double slashes in URL
-  String cleanUrl = (url ?? "").replaceAll(RegExp(r'(?<!:)//+'), '/');
-  
-  // Check if URL is valid
-  if (cleanUrl.isEmpty || !cleanUrl.startsWith('http')) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Image.asset(
-        "assets/images/AppLogo.png",
-        width: 90,
-        height: 90,
-        fit: BoxFit.contain,
-      ),
-    );
-  }
-
   return ClipRRect(
     borderRadius: BorderRadius.circular(borderRadius),
     child: SizedBox(
       width: width,
       height: height,
       child: Image.network(
-        cleanUrl,
+        url ?? "",
         fit: fit,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
@@ -1670,7 +1973,8 @@ Widget safeNetworkImage(
             height: height,
             child: Image.asset(
               "assets/images/AppLogo.png",
-              width: 90,
+              // fit: fit,
+               width: 90,
               height: 90,
               fit: BoxFit.contain,
             ),

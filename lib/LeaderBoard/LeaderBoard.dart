@@ -4,6 +4,7 @@ import 'package:burmapartner/Dashboard/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Leaderboard extends StatefulWidget {
@@ -123,43 +124,86 @@ void loadMoreData() {
             },
           ),
         ),
-        body: isLoading
-     ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/images/AppLogo.png",
-                      width: 100,
-                      height: 100,
-                    ),
-                    const SizedBox(height: 20),
-                     CircularProgressIndicator(color: custom_color.app_color,),
-                  ],
-                ),
-     )
-    : leaderboard_list.isEmpty
-        ? const Center(child: Text("No Data Found"))
-        : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(12),
-              itemCount: leaderboard_list.length + 1,
-              itemBuilder: (context, index) {
-                if (index < leaderboard_list.length) {
-                  var item = leaderboard_list[index];
-                  return buildLeaderboardCard(item, index);
-                } else {
-                  return isMoreLoading
-                      ?  Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(child: CircularProgressIndicator(color: custom_color.app_color)),
-                        )
-                      : const SizedBox();
-                }
-              },
-            )
+        body: SafeArea(
+          child: isLoading
+               ? _buildShimmer()
+              : leaderboard_list.isEmpty
+          ? const Center(child: Text("No Data Found"))
+          : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(12),
+                itemCount: leaderboard_list.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < leaderboard_list.length) {
+                    var item = leaderboard_list[index];
+                    return buildLeaderboardCard(item, index);
+                  } else {
+                    return isMoreLoading
+                        ?  Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(child: CircularProgressIndicator(color: custom_color.app_color)),
+                          )
+                        : const SizedBox();
+                  }
+                },
+              ),
+        )
       ));
   }
+  Widget _buildShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        padding: EdgeInsets.all(sw * 0.03),
+        itemCount: 8,
+        itemBuilder: (_, __) => Container(
+          margin: EdgeInsets.symmetric(vertical: sh * 0.01),
+          padding: EdgeInsets.all(sw * 0.04),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              // Trophy icon placeholder
+              Container(
+                width: sw * 0.08,
+                height: sw * 0.08,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: sw * 0.04),
+              // Rank column
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(width: sw * 0.1, height: sh * 0.014, color: Colors.white),
+                  SizedBox(height: sh * 0.008),
+                  Container(width: sw * 0.08, height: sh * 0.018, color: Colors.white),
+                ],
+              ),
+              const Spacer(),
+              // Name + district column
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(width: sw * 0.3, height: sh * 0.018, color: Colors.white),
+                  SizedBox(height: sh * 0.008),
+                  Container(width: sw * 0.22, height: sh * 0.014, color: Colors.white),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildLeaderboardCard(dynamic item, int index) {
   int rank = item['rank'] ?? 0;
 

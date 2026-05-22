@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Maincategorytosubcategory extends StatefulWidget {
@@ -131,7 +132,8 @@ setState(() => isLoading = false);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => Cart(selected_data : selecteddata,selecteddata_title : ""))).then((_) => loadCartQty());
                 },
               ),
-              if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+              // if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+               if (cartQty.length > 0)
                 Positioned(
                   right: 6,
                   top: 6,
@@ -142,7 +144,8 @@ setState(() => isLoading = false);
                       shape: BoxShape.circle,
                     ),
                     child: Text(
-                      cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                      // cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                       cartQty.length.toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -151,158 +154,188 @@ setState(() => isLoading = false);
           ),
             ]
         ),
-body: isLoading
+body: SafeArea(
+  child: isLoading
+            ? _buildShimmer()
+            : (subcaragory_product == null || subcaragory_product.isEmpty)
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    "assets/images/AppLogo.png",
-                    width: 100,
-                    height: 100,
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 70,
+                    color: Colors.grey.shade400,
                   ),
-                  const SizedBox(height: 20),
-                   CircularProgressIndicator(color: custom_color.app_color,),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "No Data Found",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ],
               ),
-            ) : (subcaragory_product == null || subcaragory_product.isEmpty)
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 70,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "No Data Found",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          )
-          : GridView.builder(
-  padding: const EdgeInsets.all(15),
-  itemCount: subcaragory_product?.length ?? 0,
-  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2,
-    mainAxisSpacing: 15,
-    crossAxisSpacing: 15,
-    childAspectRatio: .9,
-  ),
-  itemBuilder: (context, index) {
-
-    var sub = subcaragory_product[index];
-
-    return InkWell(
-      onTap: () async{
-        await storage.setItem('maincattosubcat_title',selecteddata);
-        print(sub);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Mainsubcattoproduct(
-              selected_data: sub, selecteddata_title :selecteddata
-            ),
-          ),
-        );
-
-      },
-
-      child: Container(
-        // decoration: BoxDecoration(
-        //   color: Colors.white,
-        //   borderRadius: BorderRadius.circular(18),
-        //   boxShadow: [
-        //     BoxShadow(
-        //       color: Colors.black.withOpacity(.05),
-        //       blurRadius: 12,
-        //       offset: const Offset(0,4),
-        //     )
-        //   ],
-        // ),
-decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-
-    // Right & Bottom light shadow
-    boxShadow: [
-      BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
             )
-        
-    ],
-
-    // Optional border for sharp edge effect
-    border: Border(
-      right: BorderSide(
-        color: Colors.grey.shade300,
-        // color: custom_color.app_color.withOpacity(0.3),
-        width: 3,
-      ),
-      bottom: BorderSide(
-        color: Colors.grey.shade300,
-        // color: custom_color.app_color.withOpacity(0.3), 
-        width: 3,
-      ),
+            : GridView.builder(
+    padding: const EdgeInsets.all(15),
+    itemCount: subcaragory_product?.length ?? 0,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      mainAxisSpacing: 15,
+      crossAxisSpacing: 15,
+      childAspectRatio: .9,
     ),
-  ),
-        child: Column(
-          children: [
-
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18)),
-                child: safeNetworkImage(
-                  sub['img'],
-                  fit: BoxFit.cover,
-                ),
+    itemBuilder: (context, index) {
+  
+      var sub = subcaragory_product[index];
+  
+      return InkWell(
+        onTap: () async{
+          await storage.setItem('maincattosubcat_title',selecteddata);
+          print(sub);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Mainsubcattoproduct(
+                selected_data: sub, selecteddata_title :selecteddata
               ),
             ),
-
-            // Padding(
-            //   padding: const EdgeInsets.all(10),
-            //   child: Text(
-            //     sub['name'] ?? "",
-            //          maxLines: 2,
-            //   overflow: TextOverflow.ellipsis,
-            //     style: const TextStyle(
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // )
-            Container(
-  height: 45, // ✅ fixed space for 2 lines
-  alignment: Alignment.center,
-  padding: const EdgeInsets.symmetric(horizontal: 8),
-  child: Text(
-    sub['name'] ?? "",
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    textAlign: TextAlign.center,
-    style: const TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 14,
-    ),
-  ),
-),
-          ],
+          );
+  
+        },
+  
+        child: Container(
+          // decoration: BoxDecoration(
+          //   color: Colors.white,
+          //   borderRadius: BorderRadius.circular(18),
+          //   boxShadow: [
+          //     BoxShadow(
+          //       color: Colors.black.withOpacity(.05),
+          //       blurRadius: 12,
+          //       offset: const Offset(0,4),
+          //     )
+          //   ],
+          // ),
+  decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+  
+      // Right & Bottom light shadow
+      boxShadow: [
+        BoxShadow(
+                color: Colors.black.withOpacity(.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              )
+          
+      ],
+  
+      // Optional border for sharp edge effect
+      border: Border(
+        right: BorderSide(
+          color: Colors.grey.shade300,
+          // color: custom_color.app_color.withOpacity(0.3),
+          width: 3,
+        ),
+        bottom: BorderSide(
+          color: Colors.grey.shade300,
+          // color: custom_color.app_color.withOpacity(0.3), 
+          width: 3,
         ),
       ),
-    );
-  },
+    ),
+          child: Column(
+            children: [
+  
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(18)),
+                  child: safeNetworkImage(
+                    sub['img'],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+  
+              // Padding(
+              //   padding: const EdgeInsets.all(10),
+              //   child: Text(
+              //     sub['name'] ?? "",
+              //          maxLines: 2,
+              //   overflow: TextOverflow.ellipsis,
+              //     style: const TextStyle(
+              //       fontWeight: FontWeight.bold,
+              //     ),
+              //   ),
+              // )
+              Container(
+    height: 45, // ✅ fixed space for 2 lines
+    alignment: Alignment.center,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: Text(
+      sub['name'] ?? "",
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        fontSize: 14,
+      ),
+    ),
+  ),
+            ],
+          ),
+        ),
+      );
+    },
+  ),
 )
                   ));
               }
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(15),
+        itemCount: 6,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 15,
+          crossAxisSpacing: 15,
+          childAspectRatio: .9,
+        ),
+        itemBuilder: (_, __) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                  ),
+                ),
+              ),
+              Container(
+                height: 45,
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 Widget buildProductCard(var p, var variant) {
   String variantId = variant['product_variant_id'].toString();
 int qty = cartQty[variantId] ?? 0;

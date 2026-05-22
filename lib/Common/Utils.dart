@@ -2,6 +2,8 @@
 import 'package:burmapartner/Login/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences pref;
@@ -30,9 +32,17 @@ class Helper {
   logout(BuildContext context) async {
   Helper().clearAllData();
 
-  final pref = await SharedPreferences.getInstance();
+  // final pref = await SharedPreferences.getInstance();
+  // await pref.clear();
+  // await Hive.deleteFromDisk();
+   final pref = await SharedPreferences.getInstance();
   await pref.clear();
-
+  
+  final storage = LocalStorage('app_store');
+  await storage.ready;
+  await storage.clear();
+  
+  await Hive.deleteFromDisk();
   // 🔥 remove all previous pages (Dashboard, Profile etc)
   Navigator.pushAndRemoveUntil(
     context,

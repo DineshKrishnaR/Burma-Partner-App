@@ -1,5 +1,6 @@
 import 'package:burmapartner/CartPages/Cart.dart';
 import 'package:burmapartner/Common/DeviceInfo.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:burmapartner/Common/FirebaseApi.dart';
 import 'package:burmapartner/Common/Utils.dart';
@@ -8,10 +9,10 @@ import 'package:burmapartner/Dashboard/DashboardApi.dart';
 import 'package:burmapartner/Dashboard/Dashboardmenu.dart';
 import 'package:burmapartner/Favourites/Favourites.dart';
 import 'package:burmapartner/LeaderBoard/LeaderBoard.dart';
-import 'package:burmapartner/Notification/Notification.dart';
+import 'package:burmapartner/Notification/Notifications.dart';
 import 'package:burmapartner/OrdersPages/Orders.dart';
 import 'package:burmapartner/ProfilePage/ProfilePage.dart';
-import 'package:burmapartner/RefereCustomer/RefereCustomer.dart';
+import 'package:burmapartner/RefereCustomer/Referecustomer.dart';
 import 'package:burmapartner/Sales/Sales.dart';
 import 'package:burmapartner/Wallet/WalletScreens.dart';
 import 'package:carousel_slider/carousel_options.dart';
@@ -19,6 +20,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Homepage extends StatefulWidget {
@@ -151,17 +153,35 @@ class _HomepageState extends State<Homepage> {
     }
     setState(() => isLoading = false);
   }
+   DateTime? currentBackPressTime;
+   Future<bool> onWillPop() async {
+    DateTime now = DateTime.now();
+
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+
+      currentBackPressTime = now;
+
+      Fluttertoast.showToast(msg: 'Press back again to exit');
+      return false;
+    }
+
+    return true;
+  }
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      
-      drawer: const Dashboardmenu(),
-      appBar: _buildAppBar(),
-      body: isLoading ? _buildLoader() : _buildBody(screenHeight),
-      bottomNavigationBar: _buildBottomNav(),
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6FA),
+        
+        drawer: const Dashboardmenu(),
+        appBar: _buildAppBar(),
+        body: SafeArea(child: isLoading ? _buildLoader() : _buildBody(screenHeight)),
+        bottomNavigationBar: _buildBottomNav(),
+      ),
     );
   }
 
@@ -268,16 +288,53 @@ class _HomepageState extends State<Homepage> {
   }
 
   Widget _buildLoader() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset("assets/images/AppLogo.png", width: 90, height: 90),
-          const SizedBox(height: 20),
-          CircularProgressIndicator(color: custom_color.app_color, strokeWidth: 3),
-          const SizedBox(height: 12),
-          Text("Loading...", style: TextStyle(color: Colors.grey[500], fontSize: 13)),
-        ],
+    final screenHeight = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Banner skeleton
+              const SizedBox(height: 4),
+              Container(
+                height: screenHeight * 0.22,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              ),
+              const SizedBox(height: 24),
+              // Section title skeleton
+              Container(width: 120, height: 16, color: Colors.white),
+              const SizedBox(height: 12),
+              // Grid skeleton
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 4,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 1.1,
+                ),
+                itemBuilder: (_, __) => Container(
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Certifications skeleton
+              Container(width: 140, height: 16, color: Colors.white),
+              const SizedBox(height: 12),
+              Container(
+                height: screenHeight * 0.18,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -286,7 +343,7 @@ class _HomepageState extends State<Homepage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildWelcomeHeader(),
+        // _buildWelcomeHeader(),
         Expanded(
           child: SingleChildScrollView(
             // physics: const BouncingScrollPhysics(),

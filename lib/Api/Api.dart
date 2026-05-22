@@ -1,5 +1,7 @@
 
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'package:burmapartner/Common/UrlPath.dart';
 import 'package:http/http.dart' as http;
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
@@ -49,177 +51,181 @@ class Api {
 
   Future<Map<String, dynamic>> loginApi(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + userLogin),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + userLogin),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
       throw Exception(data['message'] ?? 'Login failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
 
   Future<Map<String, dynamic>> Register(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + newregister),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + newregister),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Register failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
-   
+
   Future<Map<String, dynamic>> RegisterSentOTP(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + registersendotp),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + registersendotp),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'OTP send failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
-   Future<Map<String, dynamic>> getStateList(
-      Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + getstatelist),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+  Future<Map<String, dynamic>> getStateList(
+      Map<String, dynamic> body) async {
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + getstatelist),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
 
   Future<Map<String, dynamic>> UserRegister(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + userregister),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + userregister),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Register failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
 
   Future<Map<String, dynamic>> LoginsendOTP(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + loginsendotp),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + loginsendotp),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'OTP send failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
-
-
-
 
   Future<Map<String, dynamic>> getLeaderBoard(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + getleaderboard),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + getleaderboard),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
-
 
   Future<Map<String, dynamic>> getSalesReport(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + getsalesreport),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + getsalesreport),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
-
 
   Future<Map<String, dynamic>> getWalletTransactions(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + getwallettransactions),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + getwallettransactions),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
 
-
-
   Future<Map<String, dynamic>> RequestWithdrawa(
       Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse(base_url + requestwithdrawa),
-      headers: _headers(),
-      body: body, // form-urlencoded
-    );
-print(response);
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse(base_url + requestwithdrawa),
+        headers: _headers(),
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) return data;
+      throw Exception(data['message'] ?? 'Failed');
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on TimeoutException {
+      throw Exception('Request timed out');
     }
   }
   // ================= GENERIC POST API =================

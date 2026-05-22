@@ -1,7 +1,7 @@
 import 'package:burmapartner/Dashboard/HomePage.dart';
 import 'package:burmapartner/ProfilePage/ProfilePageApi.dart';
 import 'package:burmapartner/RefereCustomer/RefereCusApi.dart';
-import 'package:burmapartner/RefereCustomer/RefereCustomer.dart';
+import 'package:burmapartner/RefereCustomer/Referecustomer.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Addreferecustomer extends StatefulWidget {
@@ -96,7 +97,9 @@ class _AddreferecustomerState extends State<Addreferecustomer> {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
+          child: isLoading
+            ? _buildShimmer()
+            : SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
@@ -144,6 +147,8 @@ class _AddreferecustomerState extends State<Addreferecustomer> {
                    TextFormField(
                     controller: mobilecontroller,
                     maxLength: 10,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       labelText: 'Mobile Number *',
                       counterText: '',
@@ -499,6 +504,7 @@ class _AddreferecustomerState extends State<Addreferecustomer> {
                     controller: pincontroller,
                     maxLength: 6,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       labelText: 'Pincode *',
                       counterText: "",
@@ -669,7 +675,51 @@ class _AddreferecustomerState extends State<Addreferecustomer> {
     ));
   }
 
-Widget genderButton(String text,bool selected){
+  Widget _buildShimmer() {
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(26),
+        child: Column(
+          children: [
+            ...List.generate(8, (_) => Padding(
+              padding: EdgeInsets.only(bottom: sh * 0.02),
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            )),
+            // Gender row
+            Padding(
+              padding: EdgeInsets.only(bottom: sh * 0.02),
+              child: Row(
+                children: [
+                  Expanded(child: Container(height: 52, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
+                  const SizedBox(width: 10),
+                  Expanded(child: Container(height: 52, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)))),
+                ],
+              ),
+            ),
+            // Save button
+            Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget genderButton(String text, bool selected) {
   return Expanded(
     child: GestureDetector(
       onTap: (){

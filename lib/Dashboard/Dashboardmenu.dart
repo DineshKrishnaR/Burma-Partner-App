@@ -8,16 +8,16 @@ import 'package:burmapartner/Dashboard/DashboardApi.dart';
 import 'package:burmapartner/Dashboard/HomePage.dart';
 import 'package:burmapartner/Favourites/Favourites.dart';
 import 'package:burmapartner/Login/LoginScreen.dart';
-import 'package:burmapartner/Notification/Notification.dart';
+import 'package:burmapartner/Notification/Notifications.dart';
 import 'package:burmapartner/OrdersPages/Orders.dart';
 import 'package:burmapartner/ProfilePage/ProfilePage.dart';
 import 'package:burmapartner/ProfilePage/ProfilePageApi.dart';
-import 'package:burmapartner/ReferEarn/Refer&Earn.dart';
-import 'package:burmapartner/RefereCustomer/RefereCustomer.dart';
-import 'package:burmapartner/Settings/AboutUs.dart';
-import 'package:burmapartner/Settings/ContactUs.dart';
-import 'package:burmapartner/Settings/DeliveryPolicy.dart';
-import 'package:burmapartner/Settings/PrivicyPolicy.dart';
+import 'package:burmapartner/ReferEarn/ReferandEarn.dart';
+import 'package:burmapartner/RefereCustomer/Referecustomer.dart';
+import 'package:burmapartner/Settings/Aboutus.dart';
+import 'package:burmapartner/Settings/Contactus.dart';
+import 'package:burmapartner/Settings/Deliverypolicy.dart';
+import 'package:burmapartner/Settings/Privicypolicy.dart';
 import 'package:burmapartner/Settings/ReturnRefundPolicy.dart';
 import 'package:burmapartner/Settings/TermsAndCondictions.dart';
 import 'package:burmapartner/Wallet/RequestWithdrawal.dart';
@@ -25,6 +25,7 @@ import 'package:burmapartner/Wallet/WalletScreens.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../Common/colors.dart' as custom_color;
@@ -53,12 +54,21 @@ class _DashboardmenuState extends State<Dashboardmenu> {
   var wallet_amount;
 
   bool isProfileLoaded = false;
+  String appVersion = "";
   @override
   void initState() {
     super.initState();
     initPreferences();
+     loadAppVersion();
   }
 
+Future<void> loadAppVersion() async {
+  final info = await PackageInfo.fromPlatform();
+  setState(() {
+    appVersion = "${info.version} (${info.buildNumber})";
+    print(appVersion);
+  });
+}
   initPreferences() async {
     pref = await SharedPreferences.getInstance();
     await storage.ready;
@@ -313,14 +323,60 @@ isProfileLoaded = true;
                     // }),
 
                     // _menu(Icons.share_outlined, "Share App", () {}),
-
+                     _menu(Icons.delete_outline, "Delete Account", () {
+                      _deleteAccountDialog(context,customer_id,userResponse);
+                    }),
                     _menu(Icons.logout_outlined, "Logout", () {
                       _logoutDialog(context);
                     }),
 
-                    _menu(Icons.delete_outline, "Delete Account", () {
-                      _deleteAccountDialog(context,customer_id,userResponse);
-                    }),
+                    // _menu(Icons.delete_outline, "Delete Account", () {
+                    //   _deleteAccountDialog(context,customer_id,userResponse);
+                    // }),
+                     Padding(
+  padding: const EdgeInsets.only(bottom: 15),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+
+      const Divider(thickness: 0.5),
+
+      const SizedBox(height: 8),
+
+      const Text(
+        'Developed By',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+        ),
+      ),
+
+      const SizedBox(height: 2),
+
+      const Text(
+        'Muviereck Technologies Pvt Ltd',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+
+      const SizedBox(height: 6),
+
+      Text(
+        "App Version $appVersion",
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+        ),
+      ),
+
+      const SizedBox(height: 5),
+    ],
+  ),
+),
+                SizedBox(height: screenHeight*0.06,)
               ],
             ),
           ),

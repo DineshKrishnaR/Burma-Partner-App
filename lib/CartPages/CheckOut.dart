@@ -20,6 +20,7 @@ class Checkout extends StatefulWidget {
   final double deliveryCharge;
   final double gstPercent;
   final double totalAmount;
+  final selected_data;
 
   const Checkout({
     super.key,
@@ -28,6 +29,7 @@ class Checkout extends StatefulWidget {
     required this.deliveryCharge,
     required this.gstPercent,
     required this.totalAmount,
+    required this.selected_data,
   });
 
   @override
@@ -59,6 +61,7 @@ class _CheckoutState extends State<Checkout> {
   double walletBalance = 0;
   double totalTax = 0;
   var order_user_type;
+  var selecteddata;
   @override
   void initState() {
     super.initState();
@@ -179,7 +182,7 @@ if (widget.gstPercent > 0) {
 // double finalTotal =
 //     subTotal + productGST + widget.deliveryCharge - discountAmount;
 double finalTotal =
-    subTotal + widget.deliveryCharge - discountAmount;
+    (subTotal + widget.deliveryCharge - discountAmount).roundToDouble();
     // double walletBalance = 0;
 
 if (wallet_amount != null) {
@@ -204,7 +207,8 @@ if (useWallet) {
     walletUsed = finalTotal;
   }
 
-  finalTotal = finalTotal - walletUsed;
+  // finalTotal = finalTotal - walletUsed;
+  finalTotal = (finalTotal - walletUsed).roundToDouble();
 }
  else {
   walletUsed = 0;
@@ -212,11 +216,14 @@ if (useWallet) {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context)=>const Cart(selected_data: "",selecteddata_title: "",)));
-      },
-
+      // onPopInvoked: (didPop) {
+      //   Navigator.push(context,
+      //       MaterialPageRoute(builder: (context)=>const Cart(selected_data: "",selecteddata_title: "",)));
+      // },
+onPopInvoked: (didPop) {
+  if (didPop) return;
+  Navigator.pop(context);
+},
       child: Scaffold(
 
         appBar: AppBar(
@@ -226,542 +233,937 @@ if (useWallet) {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios,
                 color: Colors.white),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context)=>const Cart(selected_data: "",selecteddata_title: "",)));
-            },
+            // onPressed: () {
+            //   Navigator.push(context,
+            //       MaterialPageRoute(builder: (context)=>const Cart(selected_data: "",selecteddata_title: "",)));
+            // },
+                      onPressed: () {
+  Navigator.pop(context);
+},
           ),
         ),
 
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-
-              /// DELIVERY ADDRESS
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  // color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(18),
-                   color: Colors.white,
-      border: Border(
-               right: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-          ),
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    const Text(
-                      "Delivery Address",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        const SizedBox(width: 80, child: Text("Name",style: TextStyle(fontWeight: FontWeight.bold),)),
-                        Text(widget.userDetails['name'] ?? ""),
-                      ],
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(width: 80, child: Text("Address",style: TextStyle(fontWeight: FontWeight.bold),)),
-                        Expanded(
-                          child: Text(
-                            "${widget.userDetails['address']}, ${widget.userDetails['address2']}\n"
-                            "${widget.userDetails['city']}, ${widget.userDetails['state']}\n"
-                            "${widget.userDetails['pin']}",
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Row(
-                      children: [
-                        const SizedBox(width: 80, child: Text("Mobile",style: TextStyle(fontWeight: FontWeight.bold),)),
-                        Text(widget.userDetails['mobile'] ?? ""),
-                      ],
-                    ),
-
-                  ],
-                ),
-              ),
-
-              /// PROMO CODE
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal:16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  // color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(18),
-                   color: Colors.white,
-      border: Border(
-               right: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-          ),
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    const Text(
-                      "Have a Promo Code?",
-                      style: TextStyle(
-                        fontSize:20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-
-                    const SizedBox(height:12),
-
-                    Row(
-                      children: [
-
-                        Expanded(
-                          child: TextField(
-                            controller: promoController,
-                            decoration: InputDecoration(
-                              hintText: "Enter the promo code",
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                BorderRadius.circular(30),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: custom_color.app_color,
-                                  width: 1.5,
-                                ),
-                             ),
-
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                            color: custom_color.app_color,
-                            width: 2,
-                          ),
-                        ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width:10),
-
-                        // ElevatedButton(
-                        //   style: ElevatedButton.styleFrom(
-                        //     // backgroundColor:
-                        //     // custom_color.button_color,
-                        //     backgroundColor: couponApplied
-                        //     ? Colors.grey // disabled color
-                        //     : custom_color.button_color,
-
-                        //   ),
-                        //   onPressed:couponApplied  ? null : () async{
-                        //      applyCoupon(finalTotal);
-                        //   },
-                        //   child:  Text(
-                        //     // "APPLY",
-                        //     couponApplied ? "APPLIED" : "APPLY",
-                        //       style: TextStyle(
-                        //           color: Colors.white)),
-                        // )
-                          ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: couponApplied
-        ? Colors.grey
-        : custom_color.button_color,
-  ),
-  onPressed: couponApplied
-      ? null
-      : () async {
-          await applyCoupon(finalTotal);
-        },
-  child: Text(
-    couponApplied ? "APPLIED" : "APPLY",
-    style: const TextStyle(color: Colors.white),
-  ),
-)
-                      ],
-                    )
-
-                  ],
-                ),
-              ),
-
-              const SizedBox(height:16),
-
-              /// ORDER SUMMARY
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal:16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  // color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(18),
-                   color: Colors.white,
-      border: Border(
-               right: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-          ),
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    const Text(
-                      "Order Summary",
-                      style: TextStyle(
-                        fontSize:22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-
-                    const SizedBox(height:20),
-
-                    const Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Product Name",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold)),
-                        Text("Qty",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold)),
-                        Text("Price",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold)),
-                        Text("Sub Total",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-
-                    const Divider(),
-
-                    Column(
-                      children: widget.cartData.map((item) {
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-
-                              /// PRODUCT NAME
-                              Expanded(
-                                flex: 4,
-                                child: Text(
-                                  "${item['product_name']} ${item['size']}",
-                                  style: const TextStyle(fontSize: 14),
-                                  softWrap: true,
-                                ),
-                              ),
-
-                              const SizedBox(width: 10),
-
-                              /// QTY
-                              SizedBox(
-                                width: 35,
-                                child: Text(
-                                  item['qty'].toString(),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-
-                              /// PRICE
-                              SizedBox(
-                                width: 70,
-                                child: Text(
-                                  "Rs.${item['discounted_price']}",
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-
-                              /// SUBTOTAL
-                              SizedBox(
-                                width: 80,
-                                child: Text(
-                                  "Rs.${item['amt']}",
-                                  textAlign: TextAlign.end,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-
-                      }).toList(),
-                    ),
-                     Divider(),
-
-                    // priceRow("Sub Total", "Rs.${subTotal.toStringAsFixed(2)}"),
-                    // priceRow("GST (${widget.gstPercent}%)",
-                    //     "Rs.${gst.toStringAsFixed(2)}"),
-                    // priceRow("Delivery Charge",
-                    //     "Rs.${widget.deliveryCharge}"),
-                    // priceRow("Sub Total", "Rs.${subTotal.toStringAsFixed(2)}"),
-priceRow("Subtotal (Excl Tax)", "Rs.${subTotalExcl.toStringAsFixed(2)}"),
-priceRow("Product GST", "Rs.${productGST.toStringAsFixed(2)}"),
-priceRow("Subtotal (Incl Tax)", "Rs.${subTotal.toStringAsFixed(2)}"),
-                    // priceRow("Product GST",
-                    //     "Rs.${productGST.toStringAsFixed(2)}"),
-
-                    priceRow("Delivery Charge + ",
-                        "Rs.${deliveryBase.toStringAsFixed(2)}"),
-
-                    priceRow("Delivery GST",
-                        "Rs.${deliveryGST.toStringAsFixed(2)}"),
-
-                    if(useWallet)
-                    // priceRow("Wallet Used","Rs.${walletUsed.toStringAsFixed(2)}"),  
-                    priceRow("Wallet Used","- Rs.${walletUsed.toStringAsFixed(2)}"), 
-
-                    // if (couponApplied)
-                    // if (appliedCoupon.isNotEmpty)
-                    // priceRow(
-                    //   "Coupon ($appliedCoupon)",
-                    //   "- Rs.${discountAmount.toStringAsFixed(2)}",
-                    // ), 
-if (appliedCoupon.isNotEmpty && discountAmount > 0)
-  priceRow(
-    "Coupon ($appliedCoupon)",
-    "- Rs.${discountAmount.toStringAsFixed(2)}",
-  ),
-                  ],
-                ),
-              ),
-
-               SizedBox(height:16),
-/// WALLET BALANCE
-Container(
-  margin: const EdgeInsets.symmetric(horizontal: 16),
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    // color: Colors.grey.shade200,
-    borderRadius: BorderRadius.circular(18),
-     color: Colors.white,
-      border: Border(
-               right: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-          ),
-  ),
-
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-      const Text(
-        "Wallet Balance :",
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.green,
-        ),
-      ),
-
-      const SizedBox(height: 16),
-
-      Row(
-        children: [
-
-          Icon(Icons.account_balance_wallet,
-              color: custom_color.app_color, size: 30),
-
-          const SizedBox(width: 10),
-
-           Expanded(
+        body: SafeArea(
+          child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                Text(
-                  "Wallet Balance :",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16),
+               children: [
+                _sectionCard(
+                  icon: Icons.location_on_outlined,
+                  title: "Delivery Address",
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _infoRow(Icons.person_outline, widget.userDetails['name'] ?? ""),
+                      const SizedBox(height: 6),
+                      _infoRow(Icons.home_outlined,
+                        "${widget.userDetails['address']}, ${widget.userDetails['address2']}\n"
+                        "${widget.userDetails['city']}, ${widget.userDetails['state']} - ${widget.userDetails['pin']}"),
+                      const SizedBox(height: 6),
+                      _infoRow(Icons.phone_outlined, widget.userDetails['mobile'] ?? ""),
+                    ],
+                  ),
                 ),
-
-                SizedBox(height: 4),
-
-                Text(
-                 "Total Balance : Rs ${wallet_amount?['amount'] ?? 0}",
-                  style: TextStyle(fontSize: 15),
+          
+                const SizedBox(height: 12),
+          
+                /// PROMO CODE
+                // _sectionCard(
+                //   icon: Icons.local_offer_outlined,
+                //   title: "Promo Code",
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: TextField(
+                //           controller: promoController,
+                //           decoration: InputDecoration(
+                //             hintText: "Enter promo code",
+                //             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                //             filled: true,
+                //             fillColor: Colors.grey.shade50,
+                //             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                //             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                //             enabledBorder: OutlineInputBorder(
+                //               borderRadius: BorderRadius.circular(10),
+                //               borderSide: BorderSide(color: Colors.grey.shade200),
+                //             ),
+                //             focusedBorder: OutlineInputBorder(
+                //               borderRadius: BorderRadius.circular(10),
+                //               borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       const SizedBox(width: 10),
+                //       SizedBox(
+                //         height: 48,
+                //         child: ElevatedButton(
+                //           style: ElevatedButton.styleFrom(
+                //             backgroundColor: couponApplied ? Colors.grey.shade400 : custom_color.button_color,
+                //             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                //             elevation: 0,
+                //           ),
+                //           onPressed: couponApplied ? null : () async { await applyCoupon(finalTotal); },
+                //           child: Text(couponApplied ? "Applied ✓" : "Apply", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+          //  _sectionCard(
+                  
+          //         icon: Icons.local_offer_outlined,
+          //         title: "Promo Code",
+          //         child: couponApplied
+          //             ? Row(
+          //                 children: [
+          //                   Expanded(
+          //                     child: Container(
+          //                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          //                       decoration: BoxDecoration(
+          //                         color: Colors.green.shade50,
+          //                         borderRadius: BorderRadius.circular(10),
+          //                         border: Border.all(color: Colors.green.shade200),
+          //                       ),
+          //                       child: Row(
+          //                         children: [
+          //                           Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
+          //                           const SizedBox(width: 6),
+          //                           Text(appliedCoupon, style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 14)),
+          //                           const SizedBox(width: 6),
+          //                           Text("- ₹${discountAmount.toStringAsFixed(0)}", style: TextStyle(color: Colors.green.shade600, fontSize: 13)),
+          //                         ],
+          //                       ),
+          //                     ),
+          //                   ),
+          //                   const SizedBox(width: 10),
+          //                   GestureDetector(
+          //                     onTap: () {
+          //                       setState(() {
+          //                         couponApplied = false;
+          //                         discountAmount = 0;
+          //                         appliedCoupon = "";
+          //                         promoController.clear();
+          //                       });
+          //                     },
+          //                     child: Container(
+          //                       padding: const EdgeInsets.all(10),
+          //                       decoration: BoxDecoration(
+          //                         color: Colors.red.shade50,
+          //                         borderRadius: BorderRadius.circular(10),
+          //                         border: Border.all(color: Colors.red.shade200),
+          //                       ),
+          //                       child: Icon(Icons.close, color: Colors.red.shade400, size: 18),
+          //                     ),
+          //                   ),
+          //                 ],
+          //               )
+          //             : Row(
+          //                 children: [
+          //                   Expanded(
+          //                     child: TextField(
+          //                       controller: promoController,
+          //                       decoration: InputDecoration(
+          //                         hintText: "Enter promo code",
+          //                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+          //                         filled: true,
+          //                         fillColor: Colors.grey.shade50,
+          //                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          //                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+          //                         enabledBorder: OutlineInputBorder(
+          //                           borderRadius: BorderRadius.circular(10),
+          //                           borderSide: BorderSide(color: Colors.grey.shade200),
+          //                         ),
+          //                         focusedBorder: OutlineInputBorder(
+          //                           borderRadius: BorderRadius.circular(10),
+          //                           borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+          //                         ),
+          //                       ),
+          //                     ),
+          //                   ),
+          //                   const SizedBox(width: 10),
+          //                   SizedBox(
+          //                     height: 48,
+          //                     child: ElevatedButton(
+          //                       style: ElevatedButton.styleFrom(
+          //                         backgroundColor: custom_color.button_color,
+          //                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          //                         elevation: 0,
+          //                       ),
+          //                       onPressed: () async { await applyCoupon(subTotal); },
+          //                       child: const Text("Apply", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          //                     ),
+          //                   ),
+          //                 ],
+          //               ),
+          //       ),
+          _sectionCard(
+                  
+                  icon: Icons.local_offer_outlined,
+                  title: "Promo Code",
+                  child: couponApplied
+                      ? Row(
+                          children: [
+                            // Expanded(
+                            //   child: Container(
+                            //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            //     decoration: BoxDecoration(
+                            //       color: Colors.green.shade50,
+                            //       borderRadius: BorderRadius.circular(10),
+                            //       border: Border.all(color: Colors.green.shade200),
+                            //     ),
+                            //     child: Row(
+                            //       children: [
+                            //         Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
+                            //         const SizedBox(width: 6),
+                            //         Text(appliedCoupon, style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 14)),
+                            //         const SizedBox(width: 6),
+                            //         Text("- ₹${discountAmount.toStringAsFixed(0)}", style: TextStyle(color: Colors.green.shade600, fontSize: 13)),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
+                            Expanded(
+                              child: TextField(
+                                controller: promoController,
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  hintText: "Enter promo code",
+                                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                                  filled: true,
+                                  fillColor: Colors.grey[200],
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey.shade200),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // GestureDetector(
+                            //   onTap: () {
+                            //     setState(() {
+                            //       couponApplied = false;
+                            //       discountAmount = 0;
+                            //       appliedCoupon = "";
+                            //       promoController.clear();
+                            //     });
+                            //   },
+                            //   child: Container(
+                            //     padding: const EdgeInsets.all(10),
+                            //     decoration: BoxDecoration(
+                            //       color: Colors.red.shade50,
+                            //       borderRadius: BorderRadius.circular(10),
+                            //       border: Border.all(color: Colors.red.shade200),
+                            //     ),
+                            //     child: Icon(Icons.close, color: Colors.red.shade400, size: 18),
+                            //   ),
+                            // ),
+                              SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  elevation: 0,
+                                ),
+                                onPressed: () async { 
+                                 setState(() {
+                                  couponApplied = false;
+                                  discountAmount = 0;
+                                  appliedCoupon = "";
+                                  promoController.clear();
+                                });
+                                   },
+                                child: const Text("Remove", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: promoController,
+                                decoration: InputDecoration(
+                                  hintText: "Enter promo code",
+                                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade50,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey.shade200),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: custom_color.button_color,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  elevation: 0,
+                                ),
+                                onPressed: () async { await applyCoupon(subTotal); },
+                                child: const Text("Apply", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
+                const SizedBox(height: 12),
+          
+                /// ORDER SUMMARY
+                _sectionCard(
+                  icon: Icons.receipt_long_outlined,
+                  title: "Order Summary",
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(flex: 4, child: Text("Product", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black))),
+                            SizedBox(width: 30, child: Text("Qty", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black))),
+                            SizedBox(width: 65, child: Text("Price", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black))),
+                            SizedBox(width: 70, child: Text("Total", textAlign: TextAlign.end, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black))),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...widget.cartData.map((item) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 4, child: Text("${item['product_name']} ${item['size']}", style: const TextStyle(fontSize: 13))),
+                            SizedBox(width: 30, child: Text(item['qty'].toString(), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13))),
+                            SizedBox(width: 65, child: Text("₹${item['discounted_price']}", textAlign: TextAlign.center, style: const TextStyle(fontSize: 13))),
+                            SizedBox(width: 70, child: Text("₹${item['amt']}", textAlign: TextAlign.end, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
+                          ],
+                        ),
+                      )).toList(),
+                      const Divider(height: 20),
+                      _priceDetailRow("Items Amount", "₹${subTotalExcl.toStringAsFixed(0)}"),
+                      _priceDetailRow("Product GST", "₹${productGST.toStringAsFixed(0)}"),
+                      _priceDetailRow("Items Total", "₹${subTotal.toStringAsFixed(0)}"),
+                      _priceDetailRow("Delivery Charge", "₹${deliveryBase.toStringAsFixed(0)}"),
+                      _priceDetailRow("Delivery GST", "₹${deliveryGST.toStringAsFixed(0)}"),
+                      if (useWallet) _priceDetailRow("Wallet Used", "- ₹${walletUsed.toStringAsFixed(0)}", valueColor: Colors.green),
+                      if (appliedCoupon.isNotEmpty) _priceDetailRow("Coupon ($appliedCoupon)", "- ₹${discountAmount.toStringAsFixed(0)}", valueColor: Colors.green),
+                    ],
+                  ),
+                ),
+          
+                const SizedBox(height: 12),
+          
+                /// WALLET BALANCE
+                _sectionCard(
+                  icon: Icons.account_balance_wallet_outlined,
+                  title: "Wallet Balance",
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: custom_color.app_color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.account_balance_wallet, color: custom_color.app_color, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Available Balance", style: TextStyle(fontSize: 13, color: Colors.grey)),
+                            Text("₹ ${wallet_amount?['amount'] ?? 0}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      Transform.scale(
+                        scale: 1.1,
+                        child: Checkbox(
+                          value: useWallet,
+                          activeColor: custom_color.app_color,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          onChanged: (value) => setState(() => useWallet = value!),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          
+                const SizedBox(height: 12),
+          
+                /// PAYMENT METHOD
+                _sectionCard(
+                  icon: Icons.payment_outlined,
+                  title: "Payment Method",
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: custom_color.app_color.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: custom_color.app_color.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.payments_outlined, color: custom_color.app_color, size: 24),
+                        const SizedBox(width: 12),
+                        const Expanded(child: Text("Online Payment", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600))),
+                        Icon(Icons.check_circle, color: custom_color.app_color, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+             
+          
+          //               /// DELIVERY ADDRESS
+          //               Container(
+          //                 margin: const EdgeInsets.all(16),
+          //                 padding: const EdgeInsets.all(16),
+          //                 decoration: BoxDecoration(
+          //                   // color: Colors.grey.shade200,
+          //                   borderRadius: BorderRadius.circular(18),
+          //                    color: Colors.white,
+          //       border: Border(
+          //                right: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //             bottom: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //           ),
+          //                 ),
+          
+          //                 child: Column(
+          //                   crossAxisAlignment: CrossAxisAlignment.start,
+          //                   children: [
+          
+          //                     const Text(
+          //                       "Delivery Address",
+          //                       style: TextStyle(
+          //                         fontSize: 22,
+          //                         fontWeight: FontWeight.bold,
+          //                         color: Colors.green,
+          //                       ),
+          //                     ),
+          
+          //                     const SizedBox(height: 16),
+          
+          //                     Row(
+          //                       children: [
+          //                         const SizedBox(width: 80, child: Text("Name",style: TextStyle(fontWeight: FontWeight.bold),)),
+          //                         Text(widget.userDetails['name'] ?? ""),
+          //                       ],
+          //                     ),
+          
+          //                     const SizedBox(height: 6),
+          
+          //                     Row(
+          //                       crossAxisAlignment: CrossAxisAlignment.start,
+          //                       children: [
+          //                         const SizedBox(width: 80, child: Text("Address",style: TextStyle(fontWeight: FontWeight.bold),)),
+          //                         Expanded(
+          //                           child: Text(
+          //                             "${widget.userDetails['address']}, ${widget.userDetails['address2']}\n"
+          //                             "${widget.userDetails['city']}, ${widget.userDetails['state']}\n"
+          //                             "${widget.userDetails['pin']}",
+          //                           ),
+          //                         ),
+          //                       ],
+          //                     ),
+          
+          //                     const SizedBox(height: 6),
+          
+          //                     Row(
+          //                       children: [
+          //                         const SizedBox(width: 80, child: Text("Mobile",style: TextStyle(fontWeight: FontWeight.bold),)),
+          //                         Text(widget.userDetails['mobile'] ?? ""),
+          //                       ],
+          //                     ),
+          
+          //                   ],
+          //                 ),
+          //               ),
+          
+          //               /// PROMO CODE
+          //               Container(
+          //                 margin: const EdgeInsets.symmetric(horizontal:16),
+          //                 padding: const EdgeInsets.all(16),
+          //                 decoration: BoxDecoration(
+          //                   // color: Colors.grey.shade200,
+          //                   borderRadius: BorderRadius.circular(18),
+          //                    color: Colors.white,
+          //       border: Border(
+          //                right: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //             bottom: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //           ),
+          //                 ),
+          
+          //                 child: Column(
+          //                   crossAxisAlignment: CrossAxisAlignment.start,
+          //                   children: [
+          
+          //                     const Text(
+          //                       "Have a Promo Code?",
+          //                       style: TextStyle(
+          //                         fontSize:20,
+          //                         fontWeight: FontWeight.bold,
+          //                         color: Colors.green,
+          //                       ),
+          //                     ),
+          
+          //                     const SizedBox(height:12),
+          
+          //                     Row(
+          //                       children: [
+          
+          //                         Expanded(
+          //                           child: TextField(
+          //                             controller: promoController,
+          //                             decoration: InputDecoration(
+          //                               hintText: "Enter the promo code",
+          //                               filled: true,
+          //                               fillColor: Colors.white,
+          //                               border: OutlineInputBorder(
+          //                                 borderRadius:
+          //                                 BorderRadius.circular(30),
+          //                               ),
+          //                               enabledBorder: OutlineInputBorder(
+          //                                 borderRadius: BorderRadius.circular(10),
+          //                                 borderSide: BorderSide(
+          //                                   color: custom_color.app_color,
+          //                                   width: 1.5,
+          //                                 ),
+          //                              ),
+          
+          //                         focusedBorder: OutlineInputBorder(
+          //                           borderRadius: BorderRadius.circular(10),
+          //                           borderSide: BorderSide(
+          //                             color: custom_color.app_color,
+          //                             width: 2,
+          //                           ),
+          //                         ),
+          //                             ),
+          //                           ),
+          //                         ),
+          
+          //                         const SizedBox(width:10),
+          
+          //                         // ElevatedButton(
+          //                         //   style: ElevatedButton.styleFrom(
+          //                         //     // backgroundColor:
+          //                         //     // custom_color.button_color,
+          //                         //     backgroundColor: couponApplied
+          //                         //     ? Colors.grey // disabled color
+          //                         //     : custom_color.button_color,
+          
+          //                         //   ),
+          //                         //   onPressed:couponApplied  ? null : () async{
+          //                         //      applyCoupon(finalTotal);
+          //                         //   },
+          //                         //   child:  Text(
+          //                         //     // "APPLY",
+          //                         //     couponApplied ? "APPLIED" : "APPLY",
+          //                         //       style: TextStyle(
+          //                         //           color: Colors.white)),
+          //                         // )
+          //                           ElevatedButton(
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: couponApplied
+          //         ? Colors.grey
+          //         : custom_color.button_color,
+          //   ),
+          //   onPressed: couponApplied
+          //       ? null
+          //       : () async {
+          //           await applyCoupon(finalTotal);
+          //         },
+          //   child: Text(
+          //     couponApplied ? "APPLIED" : "APPLY",
+          //     style: const TextStyle(color: Colors.white),
+          //   ),
+          // )
+          //                       ],
+          //                     )
+          
+          //                   ],
+          //                 ),
+          //               ),
+          
+          //               const SizedBox(height:16),
+          
+          //               /// ORDER SUMMARY
+          //               Container(
+          //                 margin: const EdgeInsets.symmetric(horizontal:16),
+          //                 padding: const EdgeInsets.all(16),
+          //                 decoration: BoxDecoration(
+          //                   // color: Colors.grey.shade200,
+          //                   borderRadius: BorderRadius.circular(18),
+          //                    color: Colors.white,
+          //       border: Border(
+          //                right: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //             bottom: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //           ),
+          //                 ),
+          
+          //                 child: Column(
+          //                   crossAxisAlignment: CrossAxisAlignment.start,
+          //                   children: [
+          
+          //                     const Text(
+          //                       "Order Summary",
+          //                       style: TextStyle(
+          //                         fontSize:22,
+          //                         fontWeight: FontWeight.bold,
+          //                         color: Colors.green,
+          //                       ),
+          //                     ),
+          
+          //                     const SizedBox(height:20),
+          
+          //                     const Row(
+          //                       mainAxisAlignment:
+          //                       MainAxisAlignment.spaceBetween,
+          //                       children: [
+          //                         Text("Product Name",
+          //                             style: TextStyle(
+          //                                 fontWeight: FontWeight.bold)),
+          //                         Text("Qty",
+          //                             style: TextStyle(
+          //                                 fontWeight: FontWeight.bold)),
+          //                         Text("Price",
+          //                             style: TextStyle(
+          //                                 fontWeight: FontWeight.bold)),
+          //                         Text("Sub Total",
+          //                             style: TextStyle(
+          //                                 fontWeight: FontWeight.bold)),
+          //                       ],
+          //                     ),
+          
+          //                     const Divider(),
+          
+          //                     Column(
+          //                       children: widget.cartData.map((item) {
+          
+          //                         return Padding(
+          //                           padding: const EdgeInsets.symmetric(vertical: 8),
+          
+          //                           child: Row(
+          //                             crossAxisAlignment: CrossAxisAlignment.start,
+          //                             children: [
+          
+          //                               /// PRODUCT NAME
+          //                               Expanded(
+          //                                 flex: 4,
+          //                                 child: Text(
+          //                                   "${item['product_name']} ${item['size']}",
+          //                                   style: const TextStyle(fontSize: 14),
+          //                                   softWrap: true,
+          //                                 ),
+          //                               ),
+          
+          //                               const SizedBox(width: 10),
+          
+          //                               /// QTY
+          //                               SizedBox(
+          //                                 width: 35,
+          //                                 child: Text(
+          //                                   item['qty'].toString(),
+          //                                   textAlign: TextAlign.center,
+          //                                 ),
+          //                               ),
+          
+          //                               /// PRICE
+          //                               SizedBox(
+          //                                 width: 70,
+          //                                 child: Text(
+          //                                   "Rs.${item['discounted_price']}",
+          //                                   textAlign: TextAlign.center,
+          //                                 ),
+          //                               ),
+          
+          //                               /// SUBTOTAL
+          //                               SizedBox(
+          //                                 width: 80,
+          //                                 child: Text(
+          //                                   "Rs.${item['amt']}",
+          //                                   textAlign: TextAlign.end,
+          //                                   style: const TextStyle(fontWeight: FontWeight.bold),
+          //                                 ),
+          //                               ),
+          //                             ],
+          //                           ),
+          //                         );
+          
+          //                       }).toList(),
+          //                     ),
+          //                      Divider(),
+          
+          //                     // priceRow("Sub Total", "Rs.${subTotal.toStringAsFixed(2)}"),
+          //                     // priceRow("GST (${widget.gstPercent}%)",
+          //                     //     "Rs.${gst.toStringAsFixed(2)}"),
+          //                     // priceRow("Delivery Charge",
+          //                     //     "Rs.${widget.deliveryCharge}"),
+          //                     // priceRow("Sub Total", "Rs.${subTotal.toStringAsFixed(2)}"),
+          // priceRow("Subtotal (Excl Tax)", "Rs.${subTotalExcl.toStringAsFixed(2)}"),
+          // priceRow("Product GST", "Rs.${productGST.toStringAsFixed(2)}"),
+          // priceRow("Subtotal (Incl Tax)", "Rs.${subTotal.toStringAsFixed(2)}"),
+          //                     // priceRow("Product GST",
+          //                     //     "Rs.${productGST.toStringAsFixed(2)}"),
+          
+          //                     priceRow("Delivery Charge + ",
+          //                         "Rs.${deliveryBase.toStringAsFixed(2)}"),
+          
+          //                     priceRow("Delivery GST",
+          //                         "Rs.${deliveryGST.toStringAsFixed(2)}"),
+          
+          //                     if(useWallet)
+          //                     // priceRow("Wallet Used","Rs.${walletUsed.toStringAsFixed(2)}"),  
+          //                     priceRow("Wallet Used","- Rs.${walletUsed.toStringAsFixed(2)}"), 
+          
+          //                     // if (couponApplied)
+          //                     // if (appliedCoupon.isNotEmpty)
+          //                     // priceRow(
+          //                     //   "Coupon ($appliedCoupon)",
+          //                     //   "- Rs.${discountAmount.toStringAsFixed(2)}",
+          //                     // ), 
+          // if (appliedCoupon.isNotEmpty && discountAmount > 0)
+          //   priceRow(
+          //     "Coupon ($appliedCoupon)",
+          //     "- Rs.${discountAmount.toStringAsFixed(2)}",
+          //   ),
+          //                   ],
+          //                 ),
+          //               ),
+          
+          //                SizedBox(height:16),
+          // /// WALLET BALANCE
+          // Container(
+          //   margin: const EdgeInsets.symmetric(horizontal: 16),
+          //   padding: const EdgeInsets.all(16),
+          //   decoration: BoxDecoration(
+          //     // color: Colors.grey.shade200,
+          //     borderRadius: BorderRadius.circular(18),
+          //      color: Colors.white,
+          //       border: Border(
+          //                right: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //             bottom: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //           ),
+          //   ),
+          
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          
+          //       const Text(
+          //         "Wallet Balance :",
+          //         style: TextStyle(
+          //           fontSize: 22,
+          //           fontWeight: FontWeight.bold,
+          //           color: Colors.green,
+          //         ),
+          //       ),
+          
+          //       const SizedBox(height: 16),
+          
+          //       Row(
+          //         children: [
+          
+          //           Icon(Icons.account_balance_wallet,
+          //               color: custom_color.app_color, size: 30),
+          
+          //           const SizedBox(width: 10),
+          
+          //            Expanded(
+          //             child: Column(
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          
+          //                 Text(
+          //                   "Wallet Balance :",
+          //                   style: TextStyle(
+          //                       fontWeight: FontWeight.bold,
+          //                       fontSize: 16),
+          //                 ),
+          
+          //                 SizedBox(height: 4),
+          
+          //                 Text(
+          //                  "Total Balance : Rs ${wallet_amount?['amount'] ?? 0}",
+          //                   style: TextStyle(fontSize: 15),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          
+          //           Checkbox(
+          //             value: useWallet,
+          //             activeColor: custom_color.app_color,
+          //             onChanged: (value) {
+          //               setState(() {
+          //                 useWallet = value!;
+          //               });
+          //             },
+          //           )
+          
+          //         ],
+          //       )
+          
+          //     ],
+          //   ),
+          // ),
+          // /// PAYMENT METHOD
+          // Container(
+          //   margin: const EdgeInsets.all(16),
+          //   padding: const EdgeInsets.all(16),
+          //   decoration: BoxDecoration(
+          //     // color: Colors.grey.shade200,
+          //     borderRadius: BorderRadius.circular(18),
+          //      color: Colors.white,
+          //       border: Border(
+          //                right: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //             bottom: BorderSide(
+          //               color: Colors.grey.shade300, // light color
+          //               width: 2.5,
+          //             ),
+          //           ),
+          //   ),
+          
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          
+          //       const Text(
+          //         "Payment Method",
+          //         style: TextStyle(
+          //           fontSize: 22,
+          //           fontWeight: FontWeight.bold,
+          //           color: Colors.green,
+          //         ),
+          //       ),
+          
+          //       const SizedBox(height: 16),
+          
+          //       Row(
+          //         children: [
+          
+          //           Icon(Icons.payments,
+          //               color: custom_color.app_color,
+          //               size: 32),
+          
+          //           const SizedBox(width: 12),
+          
+          //           const Expanded(
+          //             child: Text(
+          //               "Online Payment",
+          //               style: TextStyle(
+          //                 fontSize: 18,
+          //               ),
+          //             ),
+          //           ),
+          
+          //           Radio(
+          //             value: 1,
+          //             groupValue: 1,
+          //             onChanged: (value) {},
+          //             activeColor: custom_color.app_color,
+          //           )
+          
+          //         ],
+          //       )
+          
+          //     ],
+          //   ),
+          // ),
+          //               /// TOTAL + PROCEED
+          //               // Container(
+          //               //   padding: const EdgeInsets.all(16),
+          
+          //               //   child: Row(
+          //               //     mainAxisAlignment:
+          //               //     MainAxisAlignment.spaceBetween,
+          //               //     children: [
+          
+          //               //       Text(
+          //               //         "Total : Rs.${finalTotal.toStringAsFixed(2)}",
+          //               //         style: const TextStyle(
+          //               //             fontSize:22,
+          //               //             fontWeight: FontWeight.bold),
+          //               //       ),
+          
+          //               //       ElevatedButton(
+          //               //         style: ElevatedButton.styleFrom(
+          //               //           backgroundColor:
+          //               //           custom_color.app_color,
+          //               //           padding: const EdgeInsets.symmetric(
+          //               //               horizontal:30,vertical:14),
+          //               //         ),
+          //               //         onPressed: () {
+          //               //           showConfirmDialog(finalTotal);
+          //               //         },
+          //               //         child: const Text(
+          //               //           "Proceed",
+          //               //           style: TextStyle(
+          //               //               color: Colors.white,
+          //               //               fontSize:16),
+          //               //         ),
+          //               //       )
+          
+          //               //     ],
+          //               //   ),
+          //               // )
+                
               ],
             ),
           ),
-
-          Checkbox(
-            value: useWallet,
-            activeColor: custom_color.app_color,
-            onChanged: (value) {
-              setState(() {
-                useWallet = value!;
-              });
-            },
-          )
-
-        ],
-      )
-
-    ],
-  ),
-),
-/// PAYMENT METHOD
-Container(
-  margin: const EdgeInsets.all(16),
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    // color: Colors.grey.shade200,
-    borderRadius: BorderRadius.circular(18),
-     color: Colors.white,
-      border: Border(
-               right: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300, // light color
-              width: 2.5,
-            ),
-          ),
-  ),
-
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-      const Text(
-        "Payment Method",
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.green,
         ),
-      ),
-
-      const SizedBox(height: 16),
-
-      Row(
-        children: [
-
-          Icon(Icons.payments,
-              color: custom_color.app_color,
-              size: 32),
-
-          const SizedBox(width: 12),
-
-          const Expanded(
-            child: Text(
-              "Online Payment",
-              style: TextStyle(
-                fontSize: 18,
-              ),
-            ),
-          ),
-
-          Radio(
-            value: 1,
-            groupValue: 1,
-            onChanged: (value) {},
-            activeColor: custom_color.app_color,
-          )
-
-        ],
-      )
-
-    ],
-  ),
-),
-              /// TOTAL + PROCEED
-              // Container(
-              //   padding: const EdgeInsets.all(16),
-
-              //   child: Row(
-              //     mainAxisAlignment:
-              //     MainAxisAlignment.spaceBetween,
-              //     children: [
-
-              //       Text(
-              //         "Total : Rs.${finalTotal.toStringAsFixed(2)}",
-              //         style: const TextStyle(
-              //             fontSize:22,
-              //             fontWeight: FontWeight.bold),
-              //       ),
-
-              //       ElevatedButton(
-              //         style: ElevatedButton.styleFrom(
-              //           backgroundColor:
-              //           custom_color.app_color,
-              //           padding: const EdgeInsets.symmetric(
-              //               horizontal:30,vertical:14),
-              //         ),
-              //         onPressed: () {
-              //           showConfirmDialog(finalTotal);
-              //         },
-              //         child: const Text(
-              //           "Proceed",
-              //           style: TextStyle(
-              //               color: Colors.white,
-              //               fontSize:16),
-              //         ),
-              //       )
-
-              //     ],
-              //   ),
-              // )
-              
-            ],
-          ),
-        ),
-           bottomNavigationBar: Container(
-  padding: const EdgeInsets.all(16),
+           bottomNavigationBar: SafeArea(
+  child: Container(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   decoration: BoxDecoration(
     color: Colors.white,
     boxShadow: [
@@ -776,27 +1178,39 @@ Container(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
 
-      Text(
-        "Total : Rs.${finalTotal.toStringAsFixed(2)}",
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
+      Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Total : ₹${finalTotal.toStringAsFixed(0)}",
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
+
+      const SizedBox(width: 12),
 
       ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: custom_color.button_color,
           padding: const EdgeInsets.symmetric(
-              horizontal: 30, vertical: 14),
+              horizontal: 24, vertical: 12),
         ),
-        // onPressed: () {
-        //   showConfirmDialog(finalTotal);
-        // },
      onPressed: () async {
   if (finalTotal == 0) {
 
-    await SaveOrders("WALLET_ONLY", finalTotal, {"status": "success"});
+    // await SaveOrders("WALLET_ONLY", finalTotal, {"status": "success"});
+    await SaveOrders(
+      "WALLET_ONLY",
+      "WALLET_ORDER",
+      "WALLET_SIGNATURE",
+      finalTotal,
+    );
+   
     await clearCart();
 
     Navigator.pushAndRemoveUntil(
@@ -815,7 +1229,7 @@ Container(
           "Proceed",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 15,
           ),
         ),
       )
@@ -823,10 +1237,20 @@ Container(
     ],
   ),
 ),
+),
       ),
     );
   }
-
+ Widget _infoRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: Colors.grey.shade500),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 13, color: Colors.grey.shade700))),
+      ],
+    );
+  }
   Widget priceRow(String title,String value){
 
     return Padding(
@@ -847,195 +1271,251 @@ Container(
     );
   }
 
+  Widget _sectionCard({required IconData icon, required String title, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: custom_color.app_color, size: 20),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+   Widget _priceDetailRow(String title, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor ?? const Color(0xFF1A1A2E))),
+        ],
+      ),
+    );
+  }
 void showConfirmDialog(double finalTotal) {
   if (isPaying) return;
 
-  // double subTotal = 0;
-  // for (var item in widget.cartData) {
-  //   subTotal += double.parse(item['amt'].toString());
-  // }
-//  double subTotal = 0;
-//   double productGST = 0;
+  double subTotalExcl = 0;
+  double productGST = 0;
 
-//   for (var item in widget.cartData) {
-//     double price = double.parse(item['discounted_price'].toString());
-//     int qty = int.parse(item['qty'].toString());
-//     double gstPercent = double.parse(item['gst_percentage'].toString());
-
-//     double itemTotal = price * qty;
-//     double itemGST = (itemTotal * gstPercent) / 100;
-
-//     subTotal += itemTotal;
-//     productGST += itemGST;
-//   }
-
-//   double deliveryBase = widget.deliveryCharge;
-//   double deliveryGST = 0;
-
-//   if (widget.gstPercent > 0) {
-//     deliveryBase = widget.deliveryCharge / (1 + widget.gstPercent / 100);
-//     deliveryGST = widget.deliveryCharge - deliveryBase;
-//   }
-double subTotalExcl = 0;
-double productGST = 0;
-
-for (var item in widget.cartData) {
-
-  double amt = double.tryParse(item['amt'].toString()) ?? 0;
-  double gstPercent = double.tryParse(item['gst_percentage'].toString()) ?? 0;
-
-  double basePrice = 0;
-  double gstAmount = 0;
-
-  if (item['gst_enabled'] == "1" && gstPercent > 0) {
-    basePrice = amt / (1 + gstPercent / 100);
-    gstAmount = amt - basePrice;
-  } else {
-    basePrice = amt;
+  for (var item in widget.cartData) {
+    double amt = double.tryParse(item['amt'].toString()) ?? 0;
+    double gstPercent = double.tryParse(item['gst_percentage'].toString()) ?? 0;
+    double basePrice = 0;
+    double gstAmount = 0;
+    if (item['gst_enabled'] == "1" && gstPercent > 0) {
+      basePrice = amt / (1 + gstPercent / 100);
+      gstAmount = amt - basePrice;
+    } else {
+      basePrice = amt;
+    }
+    subTotalExcl += basePrice;
+    productGST += gstAmount;
   }
 
-  subTotalExcl += basePrice;
-  productGST += gstAmount;
-}
+  double deliveryBase = widget.deliveryCharge;
+  double deliveryGST = 0;
+  if (widget.gstPercent > 0) {
+    deliveryBase = widget.deliveryCharge / (1 + widget.gstPercent / 100);
+    deliveryGST = widget.deliveryCharge - deliveryBase;
+  }
 
-/// ✅ FINAL subtotal (same as cart)
-double subTotal = subTotalExcl + productGST;
-
-/// ✅ ADD THIS (MISSING PART)
-double deliveryBase = widget.deliveryCharge;
-double deliveryGST = 0;
-
-if (widget.gstPercent > 0) {
-  deliveryBase = widget.deliveryCharge / (1 + widget.gstPercent / 100);
-  deliveryGST = widget.deliveryCharge - deliveryBase;
-}
-
-/// ✅ Final subtotal (including GST)
-// double subTotal = subTotalExcl + productGST;
-  showDialog(
+  showModalBottomSheet(
     context: context,
-    barrierDismissible: false,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black54,
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setDialogState) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+          return SafeArea(
+            child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Confirm Order Amount",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Divider(),
-                  // priceRow("Items Amount", "Rs.${subTotal.toStringAsFixed(2)}"),
-                  // priceRow("Delivery Charge", "Rs.${widget.deliveryCharge}"),
-                  // if (useWallet)
-                  //   priceRow("Wallet Used", "Rs.${walletUsed.toStringAsFixed(2)}"),
-                  // priceRow("Total", "Rs.${finalTotal.toStringAsFixed(2)}"),
-                  //  priceRow("Items Amount", "Rs.${subTotal.toStringAsFixed(2)}"),
-              priceRow("Items Amount", "Rs.${subTotalExcl.toStringAsFixed(2)}"),
-              priceRow("Product GST", "Rs.${productGST.toStringAsFixed(2)}"),
-
-              priceRow("Delivery Charge", "Rs.${deliveryBase.toStringAsFixed(2)}"),
-
-              priceRow("Delivery GST", "Rs.${deliveryGST.toStringAsFixed(2)}"),
-
-              if (useWallet)
-                priceRow("Wallet Used", "- Rs.${walletUsed.toStringAsFixed(2)}"),
-
-              if (discountAmount > 0)
-                priceRow("Discount", "- Rs.${discountAmount.toStringAsFixed(2)}"),
-
-              const Divider(),
-
-              priceRow("Total", "Rs.${finalTotal.toStringAsFixed(2)}"),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                /// Handle bar + header (fixed)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Column(
                     children: [
-                      const Text(
-                        "Final Total :",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      Text(
-                        "Rs.${finalTotal.toStringAsFixed(2)}",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: custom_color.app_color,
-                        ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: custom_color.app_color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.receipt_long_outlined, color: custom_color.app_color, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            "Order Summary",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E)),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  if (isPaying)
-                    Column(
+                ),
+
+                /// Scrollable price content
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
                       children: [
-                        CircularProgressIndicator(color: custom_color.app_color),
-                        const SizedBox(height: 10),
-                        const Text("Processing payment..."),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            children: [
+                              _dialogPriceRow("Items Amount", "₹${subTotalExcl.toStringAsFixed(0)}"),
+                              _dialogPriceRow("Product GST", "₹${productGST.toStringAsFixed(0)}"),
+                              _dialogPriceRow("Delivery Charge", "₹${deliveryBase.toStringAsFixed(0)}"),
+                              _dialogPriceRow("Delivery GST", "₹${deliveryGST.toStringAsFixed(0)}"),
+                              if (useWallet) _dialogPriceRow("Wallet Used", "- ₹${walletUsed.toStringAsFixed(0)}", valueColor: Colors.green),
+                              if (discountAmount > 0) _dialogPriceRow("Discount", "- ₹${discountAmount.toStringAsFixed(0)}", valueColor: Colors.green),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: custom_color.app_color.withOpacity(0.07),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: custom_color.app_color.withOpacity(0.25)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Total Payable", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                              Text(
+                                "₹${finalTotal.toStringAsFixed(0)}",
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: custom_color.app_color),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                       ],
-                    )
-                  else
-                    Row(
+                    ),
+                  ),
+                ),
+
+                /// Buttons always pinned at bottom
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+                  child: isPaying
+                    ? Column(
+                        children: [
+                          CircularProgressIndicator(color: custom_color.app_color),
+                          const SizedBox(height: 10),
+                          const Text("Processing payment...", style: TextStyle(color: Colors.grey)),
+                        ],
+                      )
+                    : Row(
                       children: [
                         Expanded(
+                            flex: 2,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
-                              side: BorderSide(color: custom_color.app_color),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
+                              side: BorderSide(color: Colors.grey.shade400),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text("Cancel"),
+                            onPressed: () => Navigator.pop(context),
+                            child: Text("Cancel", style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600)),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
+                          flex: 2,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: custom_color.button_color,
                               padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
                             ),
                             onPressed: () async {
                               setDialogState(() => isPaying = true);
                               setState(() => isPaying = true);
                               await getRazorpayDetails(finalTotal);
                             },
-                            child: const Text(
-                              "Confirm",
-                              style: TextStyle(color: Colors.white),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.lock_outline, color: Colors.white, size: 16),
+                                SizedBox(width: 6),
+                                Text("Pay Now", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                              ],
                             ),
                           ),
                         ),
                       ],
-                    )
-                ],
-              ),
+                    ),
+                ),
+              ],
             ),
+          ),
           );
         },
       );
     },
+  );
+}
+
+Widget _dialogPriceRow(String title, String value, {Color? valueColor}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor ?? const Color(0xFF1A1A2E))),
+      ],
+    ),
   );
 }
 
@@ -1118,7 +1598,7 @@ void openRazorpay(String orderId, double amount) {
     Fluttertoast.showToast(msg: "Failed to open payment gateway");
   }
 }
-void _handlePaymentSuccess(PaymentSuccessResponse response) {
+void _handlePaymentSuccess(PaymentSuccessResponse response) async{
   setState(() => isProcessingPayment = true);
   
   String paymentId = response.paymentId ?? "";
@@ -1136,9 +1616,21 @@ void _handlePaymentSuccess(PaymentSuccessResponse response) {
     return;
   }
   // SaveOrders(paymentId, finalAmount);
-  verifyPayment(paymentId, razorOrderId, signature);
+  await SaveOrders(
+    paymentId,
+    razorOrderId,
+    signature,
+    finalAmount,
+  );
+  // verifyPayment(paymentId, razorOrderId, signature);
 }
-Future<void> SaveOrders(String paymentId, double finalTotal,payResponse) async {
+// Future<void> SaveOrders(String paymentId, double finalTotal) async {
+Future<void> SaveOrders(
+  String paymentId,
+  String razorOrderId,
+  String signature,
+  double finalTotal,
+) async {
 
   try {
 
@@ -1159,12 +1651,14 @@ Future<void> SaveOrders(String paymentId, double finalTotal,payResponse) async {
       "tax_percent": widget.gstPercent.toString(),
       "final_amt": finalTotal.toStringAsFixed(2),
       // "pay_type": "online",
+      // "pay_type": finalTotal == 0 ? "wallet" : "online",
       "pay_type": finalTotal == 0 ? "wallet" : "online",
       "txn_id": paymentId,
       "mobile": widget.userDetails['mobile'] ?? "",
       "name": widget.userDetails['name'] ?? "",
       "token": accesstoken,
-      "pay_status": payResponse['status'],
+      // "pay_status": payResponse['status'],
+      "pay_status": "Success",
       "razorpay_order_id": orderId,
       "act_type": userResponse['act_type'],
       "wallet_used": walletUsed.toStringAsFixed(2),
@@ -1183,13 +1677,13 @@ Future<void> SaveOrders(String paymentId, double finalTotal,payResponse) async {
       "promo_code": appliedCoupon,
       "promo_disc_amt": discountAmount.toStringAsFixed(2),
     };
-
+    print(data);
     final response = await Cartapi().SaveOrders(data);
 
     print(response);
 
     if (response != null && response["status"] == "success") {
-
+     verifyPayment(paymentId, razorOrderId, signature ,response);
     } else {
 
       Fluttertoast.showToast(msg: "Order save failed");
@@ -1203,32 +1697,35 @@ Future<void> SaveOrders(String paymentId, double finalTotal,payResponse) async {
 
   }
 }
-Future<void> verifyPayment(String paymentId, String razorOrderId, String signature) async {
+Future<void> verifyPayment(String paymentId, String razorOrderId, String signature,orderResponse) async {
 
   try {
     var data = {
       "action": "get_pay_status",
       "accesskey": "90336",
       "customer_id": customer_id,
-      "orders_id": razorOrderId,
+      // "orders_id": razorOrderId,
+      "orders_id": orderResponse['orders_id'].toString(),
       "final_amt": finalAmount.toStringAsFixed(2),
-      "pay_type": "online",
+      // "pay_type": "online",
+      "pay_type": finalAmount == 0 ? "wallet" : "online",
       "txn_id": paymentId,
       "signature": signature,
       "token": accesstoken,
       "act_type": userResponse['act_type'],
-      "pay_status": "success"
+      // "pay_status": "Success"
+      "pay_status": "paid"
     };
 
     final response = await Cartapi().getPaymentStatus(data);
-
+    print(response);
     setState(() {
       isPaying = false;
       isProcessingPayment = false;
     });
 //  SaveOrders(paymentId, finalAmount,response);
     if (response != null && response["status"].toString().toLowerCase() == "success") {
-      await SaveOrders(paymentId, finalAmount, response);
+      // await SaveOrders(paymentId, finalAmount, response);
       await clearCart();
       
       if (mounted) {
@@ -1244,7 +1741,7 @@ Future<void> verifyPayment(String paymentId, String razorOrderId, String signatu
       }
       
     } else {
-       await SaveOrders(paymentId, finalAmount, response);
+      //  await SaveOrders(paymentId, finalAmount, response);
       //  await clearCart();
       if (mounted) {
         Navigator.pushReplacement(
@@ -1317,9 +1814,11 @@ Future<void> clearCart() async {
   final box = await Hive.openBox('cart');
   await box.delete('cartItems');
 }
+
 Future<void> applyCoupon(double totalAmount) async {
 
   if (couponApplied) return;
+
 
   if (promoController.text.trim().isEmpty) {
     Fluttertoast.showToast(msg: "Enter promo code");
@@ -1340,44 +1839,40 @@ Future<void> applyCoupon(double totalAmount) async {
 
   if (response != null && response['status'] == "success") {
 
-//     setState(() {
-//       // discountAmount =
-//       //     double.tryParse(response['discount_amt'].toString()) ?? 0;
-//       // discountAmount = 0;
-
-// if (response['discount_amt'] != null &&
-//     response['discount_amt'].toString().isNotEmpty) {
-//   discountAmount =
-//       double.parse(response['discount_amt'].toString());
-// }
-
-//       appliedCoupon = promoController.text.trim();
-//       couponApplied = true;
-//     });
 setState(() {
-  discountAmount = double.tryParse(
-        response['discount_amt']?.toString() ?? "0",
-      ) ?? 0;
+ 
+  var promoData = response['res'][0];
 
-  appliedCoupon = promoController.text.trim();
+  discountAmount = double.tryParse(promoData['discounted_amount']?.toString() ?? "0") ?? 0;
+
+  appliedCoupon = promoData['promo_code'] ?? promoController.text.trim();
+
   couponApplied = true;
 });
-    // Fluttertoast.showToast(
-    //   msg: "Promo code applied successfully",
-    // );
-ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(
-    content: Text("Promo code applied successfully"),
-  ),
-);
+   
+Fluttertoast.showToast(msg: "Promo code applied successfully");
   } else {
-    // Fluttertoast.showToast(
-    //   msg: response?['message'] ?? "Invalid promo code",
-    // );
-    ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(
-    content: Text("Invalid promo code"),
-  ),);
+    final rawMsg = response?['message']?.toString().toLowerCase() ?? "";
+    final String friendlyMsg;
+    if (rawMsg.contains('inactive') || rawMsg.contains('not active') || rawMsg.contains('disabled')) {
+      friendlyMsg = "This promo code is no longer active.";
+    } else if (rawMsg.contains('one time') || rawMsg.contains('one-time') || rawMsg.contains('1 time') || rawMsg.contains('already used') || rawMsg.contains('already been used')) {
+      friendlyMsg = "This offer is valid for one-time use only.";
+    } else if (rawMsg.contains('minimum')) {
+      final minMatch = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(rawMsg);
+      final minAmt = minMatch != null ? double.tryParse(minMatch.group(1)!) : null;
+      friendlyMsg = "Add items worth ₹${minAmt?.toStringAsFixed(0) ?? ''} or more to use this promo code.";
+    } else if (rawMsg.contains('invalid') || rawMsg.contains('not found') || rawMsg.contains('does not exist')) {
+      friendlyMsg = "Invalid promo code. Please check and try again.";
+    } else if (rawMsg.contains('expired')) {
+      friendlyMsg = "This promo code has expired.";
+    } else if (rawMsg.isNotEmpty) {
+      friendlyMsg = response?['message']?.toString() ?? "Something went wrong. Please try again.";
+    } else {
+      friendlyMsg = "Invalid promo code. Please try another.";
+    }
+    Fluttertoast.showToast(msg: friendlyMsg);
   }
 }
+
 }

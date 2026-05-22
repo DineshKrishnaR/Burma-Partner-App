@@ -63,6 +63,13 @@ List<FocusNode> focusNodes =
   
   bool _isButtonLocked = false;
   List StateList = [];
+  static final _textFormatter = FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]'));
+  // Email: letters, digits, @, ., _, %, +, -
+  static final _emailFormatter = FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._%+\-]'));
+  static final _noLeadingSpaceFormatter = TextInputFormatter.withFunction((old, newVal) {
+    if (newVal.text.startsWith(' ')) return old;
+    return newVal;
+  });
 @override
   void initState() {
     super.initState();
@@ -165,7 +172,16 @@ void startResendTimer() {
 }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: step == 1,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          setState(() {
+            step = (step == 3 || step == 4) ? (user_logtype == 'register' ? 2 : 1) : 1;
+          });
+        }
+      },
+      child: Scaffold(
       // backgroundColor: custom_color.app_color,
      
       body: Container(
@@ -209,6 +225,7 @@ void startResendTimer() {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -267,6 +284,7 @@ void startResendTimer() {
               decoration: const InputDecoration(
                 counterText: "",
                 hintText: 'Enter Your Mobile No...',
+                // labelText: 'Mobile No',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 25),
               ),
@@ -322,11 +340,11 @@ onPressed: (_isButtonLocked || isLoading)
 
           final response = await Api().Register(data);
 
-          if (response == null) {
-            Fluttertoast.showToast(msg: "Server error");
-            return;
-          }
-
+          // if (response == null) {
+          //   Fluttertoast.showToast(msg: "Server error");
+          //   return;
+          // }
+if (response == null) return;
           if (response['status'] == "success") {
             Fluttertoast.showToast(msg: "OTP sent for registration");
             user_logtype = 'register';
@@ -389,8 +407,9 @@ onPressed: (_isButtonLocked || isLoading)
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 18
-          // decoration: TextDecoration.underline,
+          fontSize: 18,
+          decoration: TextDecoration.underline,
+          decorationColor: Colors.white,
         ),
       ),
     ),
@@ -420,7 +439,7 @@ void showInactiveDialog(BuildContext context, String message) {
 Future<void> Login() async {
 if (isLoading) return;
   if (mobile.text.isEmpty) {
-    Fluttertoast.showToast(msg: "Enter mobile number");
+    Fluttertoast.showToast(msg: "Enter your mobile number");
     return;
   }
 
@@ -455,10 +474,11 @@ final response = await Api()
         .timeout(const Duration(seconds: 15)); // ✅ timeout
 
     /// ✅ SERVER NULL
-    if (response == null) {
-      Fluttertoast.showToast(msg: "Server not responding");
-      return;
-    }
+    // if (response == null) {
+    //   Fluttertoast.showToast(msg: "Server not responding");
+    //   return;
+    // }
+    if (response == null) return;
   setState(() {
     isLoading = false;
   });
@@ -467,7 +487,7 @@ final response = await Api()
 
   if (response['status'] == "success") {
 
-    Fluttertoast.showToast(msg: "OTP sent successfully");
+    // Fluttertoast.showToast(msg: "OTP sent successfully");
     user_logtype = "login";
     // LoginsendOTP();
      startResendTimer(); 
@@ -525,6 +545,7 @@ final response = await Api()
               // readOnly: true,
               decoration: const InputDecoration(
                 hintText: 'Enter Your Mobile No...',
+                // labelText: 'Mobile No',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 25),
               ),
@@ -626,8 +647,9 @@ final response = await Api()
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18
-                      // decoration: TextDecoration.underline,
+                      fontSize: 18,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.white,
                     ),
                   ),
                 ),
@@ -672,7 +694,7 @@ OtpFields(
   mainAxisAlignment: MainAxisAlignment.center,
   children: [
     const Text(
-      "Don't receive OTP? ",
+      "Didn't receive OTP? ",
       style: TextStyle(color: Colors.white70),
     ),
     
@@ -752,8 +774,13 @@ OtpFields(
           if (isLoading) return;
            String otp = otpControllers.map((e) => e.text).join();
 
+          if (otp.isEmpty) {
+            Fluttertoast.showToast(msg: "Please enter the complete OTP");
+            _isButtonLocked = false;
+            return;
+          }
           if (otp.length < 5) {
-            Fluttertoast.showToast(msg: "Enter complete OTP");
+            Fluttertoast.showToast(msg: "Please enter the valid OTP");
             _isButtonLocked = false;
             return;
           }
@@ -798,7 +825,12 @@ String maskMobile(String number){
     padding: const EdgeInsets.symmetric(horizontal: 25),
     child: Column(
       children: [
-
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Retailer",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
 TextFormField(
   controller: retailerController,
   textAlign: TextAlign.left,
@@ -809,10 +841,11 @@ TextFormField(
   readOnly: true,
   decoration: InputDecoration(
     hintText: "Retailer",
-    // labelText: 'Retailer',
+    // labelText: "Retailer",
     isDense: true,
     filled: true,
-    fillColor: Colors.grey.shade200,
+    fillColor: Colors.grey[400],
+    suffixIcon:  Icon(Icons.lock_outline, size: 18, color: Colors.grey[200]),
     contentPadding: const EdgeInsets.symmetric(
       horizontal: 20,
       vertical: 14,
@@ -824,6 +857,12 @@ TextFormField(
   ),
 ),
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Name *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
          TextFormField(
   controller: nameController,
   textAlign: TextAlign.left,
@@ -832,7 +871,8 @@ SizedBox(height: screenHeight*0.02,),
     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
   ],
   decoration: InputDecoration(
-    hintText: "Name *",
+    hintText: "Name",
+    // labelText: "Name *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -847,6 +887,12 @@ SizedBox(height: screenHeight*0.02,),
   ),
 ),
        SizedBox(height: screenHeight*0.02,),
+       const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Mobile No",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
           TextFormField(
   controller: mobile,
   textAlign: TextAlign.left,
@@ -857,9 +903,11 @@ SizedBox(height: screenHeight*0.02,),
   readOnly: true,
   decoration: InputDecoration(
     hintText: "Mobile No",
+    // labelText: "Mobile No",
     isDense: true,
     filled: true,
-    fillColor: Colors.grey.shade200,
+    fillColor: Colors.grey[400],
+    suffixIcon:  Icon(Icons.lock_outline, size: 18, color: Colors.grey[200]),
     contentPadding: const EdgeInsets.symmetric(
       horizontal: 20,
       vertical: 14,
@@ -871,6 +919,12 @@ SizedBox(height: screenHeight*0.02,),
   ),
 ),
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Email *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: emailController,
   textAlign: TextAlign.left,
@@ -880,7 +934,8 @@ SizedBox(height: screenHeight*0.02,),
   ],
 
   decoration: InputDecoration(
-    hintText: "Email *",
+    hintText: "Email",
+    // labelText: "Email *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -898,6 +953,12 @@ SizedBox(height: screenHeight*0.02,),
 
 
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("GST No",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: gstnoController,
   textAlign: TextAlign.left,
@@ -907,6 +968,7 @@ SizedBox(height: screenHeight*0.02,),
   ],
   decoration: InputDecoration(
     hintText: "GST No",
+    // labelText: "GST No",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -928,49 +990,97 @@ SizedBox(height: screenHeight*0.02,),
               style: TextStyle(color: Colors.white,fontSize: 18)),
         ),
 
+// Row(
+//   children: [
+//     Checkbox(
+//       value: gender == "Male",
+//       onChanged: (value) {
+//          final currentText = nameController.text; 
+//         setState(() {
+//           if (gender == "Male") {
+//             gender = ""; // 🔥 deselect
+//           } else {
+//             gender = "Male"; // select
+//           }
+//         });
+//         nameController.text = currentText;
+//       },
+//       fillColor: MaterialStateProperty.all(Colors.white),
+//       // activeColor: Colors.green,
+//       checkColor: Colors.green,
+//     ),
+//     const Text("Male", style: TextStyle(color: Colors.white)),
+
+//     SizedBox(height: screenHeight*0.02,),
+
+//     Checkbox(
+//       value: gender == "Female",
+//       onChanged: (value) {
+//         setState(() {
+//           if (gender == "Female") {
+//             gender = ""; // 🔥 deselect
+//           } else {
+//             gender = "Female"; // select
+//           }
+//         });
+//       },
+//       fillColor: MaterialStateProperty.all(Colors.white),
+//       // activeColor: Colors.green,
+//       checkColor: Colors.green,
+//     ),
+//     const Text("Female", style: TextStyle(color: Colors.white)),
+//   ],
+// ),
 Row(
   children: [
-    Checkbox(
-      value: gender == "Male",
+    /// Male
+    Radio<String>(
+      value: "Male",
+      groupValue: gender,
       onChanged: (value) {
-         final currentText = nameController.text; 
+        final currentText = nameController.text;
+
         setState(() {
-          if (gender == "Male") {
-            gender = ""; // 🔥 deselect
-          } else {
-            gender = "Male"; // select
-          }
+          gender = value!;
         });
+
         nameController.text = currentText;
       },
       fillColor: MaterialStateProperty.all(Colors.white),
-      // activeColor: Colors.green,
-      checkColor: Colors.green,
     ),
-    const Text("Male", style: TextStyle(color: Colors.white)),
 
-    SizedBox(height: screenHeight*0.02,),
+    const Text(
+      "Male",
+      style: TextStyle(color: Colors.white),
+    ),
 
-    Checkbox(
-      value: gender == "Female",
+    SizedBox(width: screenWidth * 0.05),
+
+    /// Female
+    Radio<String>(
+      value: "Female",
+      groupValue: gender,
       onChanged: (value) {
         setState(() {
-          if (gender == "Female") {
-            gender = ""; // 🔥 deselect
-          } else {
-            gender = "Female"; // select
-          }
+          gender = value!;
         });
       },
       fillColor: MaterialStateProperty.all(Colors.white),
-      // activeColor: Colors.green,
-      checkColor: Colors.green,
     ),
-    const Text("Female", style: TextStyle(color: Colors.white)),
+
+    const Text(
+      "Female",
+      style: TextStyle(color: Colors.white),
+    ),
   ],
 ),
-
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Address 1 *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: address1Controller,
   textAlign: TextAlign.left,
@@ -979,7 +1089,8 @@ SizedBox(height: screenHeight*0.02,),
   //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
   // ],
   decoration: InputDecoration(
-    hintText: "Address 1 *",
+    hintText: "Address 1",
+    // labelText: "Address 1 *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -996,6 +1107,12 @@ SizedBox(height: screenHeight*0.02,),
         // const SizedBox(height: 20),
 
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Address 2 *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: address2Controller,
   textAlign: TextAlign.left,
@@ -1004,7 +1121,8 @@ SizedBox(height: screenHeight*0.02,),
   //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
   // ],
   decoration: InputDecoration(
-    hintText: "Address2 *",
+    hintText: "Address 2",
+    // labelText: "Address 2 *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -1020,15 +1138,22 @@ SizedBox(height: screenHeight*0.02,),
 ),
 
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Area *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: areaController,
   textAlign: TextAlign.left,
   textAlignVertical: TextAlignVertical.center,
-  // inputFormatters: [
-  //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-  // ],
+  inputFormatters: [
+    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+  ],
   decoration: InputDecoration(
-    hintText: "Area *",
+    hintText: "Area",
+    // labelText: "Area *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -1045,6 +1170,12 @@ SizedBox(height: screenHeight*0.02,),
 
 
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Landmark *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: landmarkController,
   textAlign: TextAlign.left,
@@ -1053,7 +1184,8 @@ SizedBox(height: screenHeight*0.02,),
     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
   ],
   decoration: InputDecoration(
-    hintText: "Landmark *",
+    hintText: "Landmark",
+    // labelText: "Landmark *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -1069,6 +1201,12 @@ SizedBox(height: screenHeight*0.02,),
 ),
 
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("City *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   TextFormField(
   controller: cityController,
   textAlign: TextAlign.left,
@@ -1076,8 +1214,13 @@ SizedBox(height: screenHeight*0.02,),
   // inputFormatters: [
   //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
   // ],
+   inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                        _noLeadingSpaceFormatter,
+                      ],
   decoration: InputDecoration(
-    hintText: "City *",
+    hintText: "City",
+    // labelText: "City *",
     isDense: true,
     filled: true,
     fillColor: Colors.grey.shade200,
@@ -1092,6 +1235,12 @@ SizedBox(height: screenHeight*0.02,),
   ),
 ),
 SizedBox(height: screenHeight*0.02,),
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("State *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
   Container(
                         child: Container(
                           //  decoration: ShapeDecoration(
@@ -1100,58 +1249,112 @@ SizedBox(height: screenHeight*0.02,),
                           //     borderRadius: BorderRadius.circular(5),
                           //   ),
                           //  ),
-                           child: DropdownSearch<Map<String, dynamic>>(
-                              items: StateList.cast<Map<String, dynamic>>(),
-                              itemAsString: (item) => item['state'].toString(),
+                          //  child: DropdownSearch<Map<String, dynamic>>(
+                          //     items: StateList.cast<Map<String, dynamic>>(),
+                          //     itemAsString: (item) => item['state'].toString(),
 
-                              popupProps: PopupProps.menu(
-                                showSearchBox: true,
-                                searchFieldProps: TextFieldProps(
-                                  decoration: InputDecoration(
-                                    hintText: "Search State",
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
+                          //     popupProps: PopupProps.menu(
+                          //       showSearchBox: true,
+                          //       searchFieldProps: TextFieldProps(
+                          //         decoration: InputDecoration(
+                          //           hintText: "Search State",
+                          //           border: OutlineInputBorder(),
+                          //         ),
+                          //       ),
+                          //     ),
 
-                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                dropdownSearchDecoration: InputDecoration(
+                          //     dropdownDecoratorProps: DropDownDecoratorProps(
+                          //       dropdownSearchDecoration: InputDecoration(
                                   
-                                  hintText: "State *",
-                                  // fillColor: Colors.grey.shade100,
-                                   isDense: true,
-                                    filled: true,
-                                    fillColor: Colors.grey.shade200,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 14,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(40),
-                                      borderSide: BorderSide.none,
-                                    ),
+                          //         hintText: "State *",
+                          //         // fillColor: Colors.grey.shade100,
+                          //          isDense: true,
+                          //           filled: true,
+                          //           fillColor: Colors.grey.shade200,
+                          //           contentPadding: const EdgeInsets.symmetric(
+                          //             horizontal: 20,
+                          //             vertical: 14,
+                          //           ),
+                          //           border: OutlineInputBorder(
+                          //             borderRadius: BorderRadius.circular(40),
+                          //             borderSide: BorderSide.none,
+                          //           ),
 
-                                ),
-                              ),
+                          //       ),
+                          //     ),
 
-                              onChanged: (value) {
-                                if (value != null) {
-                                  statecontroller.text = value['state'].toString();
-                                }
-                              },
+                          //     onChanged: (value) {
+                          //       if (value != null) {
+                          //         statecontroller.text = value['state'].toString();
+                          //       }
+                          //     },
 
-                              selectedItem: StateList.isNotEmpty
-                                  ? StateList.firstWhere(
-                                      (item) => item['state'] == statecontroller.text,
-                                      orElse: () => StateList.first,
-                                    )
-                                  : null,
-                            ),
+                          //     selectedItem: StateList.isNotEmpty
+                          //         ? StateList.firstWhere(
+                          //             (item) => item['state'] == statecontroller.text,
+                          //             orElse: () => StateList.first,
+                          //           )
+                          //         : null,
+                          //   ),
+                          child: DropdownSearch<Map<String, dynamic>>(
+  items: StateList.cast<Map<String, dynamic>>(),
+
+  itemAsString: (item) => item['state'].toString(),
+
+  popupProps: PopupProps.menu(
+    showSearchBox: true,
+    searchFieldProps: const TextFieldProps(
+      decoration: InputDecoration(
+        hintText: "Search State",
+        border: OutlineInputBorder(),
+      ),
+    ),
+  ),
+
+  dropdownDecoratorProps: DropDownDecoratorProps(
+    dropdownSearchDecoration: InputDecoration(
+      hintText: "Select State",
+
+      isDense: true,
+      filled: true,
+      fillColor: Colors.grey.shade200,
+
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 14,
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(40),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  ),
+
+  onChanged: (value) {
+    if (value != null) {
+      statecontroller.text = value['state'].toString();
+    }
+  },
+
+  /// IMPORTANT FIX
+  selectedItem: statecontroller.text.isNotEmpty
+      ? StateList.firstWhere(
+          (item) => item['state'] == statecontroller.text,
+        )
+      : null,
+),
                           
                         ),
                       ),
       
                         SizedBox(height: screenHeight*0.02,),
+                        const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Pincode *",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
                           TextFormField(
                           controller: pincodeController,
                           textAlign: TextAlign.left,
@@ -1161,8 +1364,10 @@ SizedBox(height: screenHeight*0.02,),
                           // inputFormatters: [
                           //   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                           // ],
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           decoration: InputDecoration(
-                            hintText: "Pincode *",
+                            hintText: "Pincode",
+                            // labelText: "Pincode *",
                             isDense: true,
                             filled: true,
                             counterText: "",
@@ -1178,6 +1383,12 @@ SizedBox(height: screenHeight*0.02,),
                           ),
                         ),
                                 SizedBox(height: screenHeight*0.02,),
+                                const Align(
+  alignment: Alignment.centerLeft,
+  child: Text("Referral Code",
+      style: TextStyle(color: Colors.white, fontSize: 18)),
+),
+const SizedBox(height: 6),
                         TextFormField(
                           controller: referralController,
                           textAlign: TextAlign.left,
@@ -1187,6 +1398,7 @@ SizedBox(height: screenHeight*0.02,),
                           // ],
                           decoration: InputDecoration(
                             hintText: "Referral Code",
+                            // labelText: "Referral Code",
                             isDense: true,
                             filled: true,
                             fillColor: Colors.grey.shade200,
@@ -1221,7 +1433,7 @@ SizedBox(height: screenHeight*0.02,),
 
         // ✅ VALIDATION FIRST (NO LOADING HERE)
         if (nameController.text.isEmpty) {
-          Fluttertoast.showToast(msg: "Enter Name");
+          Fluttertoast.showToast(msg: "Please enter your name");
           return;
         }
 
@@ -1237,7 +1449,7 @@ SizedBox(height: screenHeight*0.02,),
         }
 
         if (gender.isEmpty) {
-          Fluttertoast.showToast(msg: "Select Gender");
+          Fluttertoast.showToast(msg: "Please select gender");
           return;
         }
 
@@ -1313,26 +1525,26 @@ SizedBox(height: screenHeight*0.02,),
 
           final response = await Api().UserRegister(data);
 
-          if (response == null) {
-            Fluttertoast.showToast(msg: "Server error");
-            return;
-          }
-
+          // if (response == null) {
+          //   Fluttertoast.showToast(msg: "Server error");
+          //   return;
+          // }
+if (response == null) return;
           if (response['code'] == 200) {
             Fluttertoast.showToast(msg: response['message']);
 
-            var user = {
-              ...response['data']['user_data'],
-              "api_token": response['data']['api_token'],
-              "act_type": response['data']['user_type'],
-            };
+            // var user = {
+            //   ...response['data']['user_data'],
+            //   "api_token": response['data']['api_token'],
+            //   "act_type": response['data']['user_type'],
+            // };
 
-            await storage.setItem('userResponse', user);
-            await pref.setBool('isLogin', true);
+            // await storage.setItem('userResponse', user);
+            // await pref.setBool('isLogin', true);
 
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Homepage()),
+              MaterialPageRoute(builder: (context) => Loginscreen()),
               (route) => false,
             );
           } else {
@@ -1483,7 +1695,7 @@ RegisterSentOTP()async{
   if (response == null) { setState(() => isLoading = false); return; }
   print(response['otp']);
   if(response['code'] == 200){
-    Fluttertoast.showToast(msg: "OTP sent successfully!");
+    // Fluttertoast.showToast(msg: "OTP sent successfully!");
     Otp = response['otp'].toString();
     startResendTimer(); 
     print(Otp);

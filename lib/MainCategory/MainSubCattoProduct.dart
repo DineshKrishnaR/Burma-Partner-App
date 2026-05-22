@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Mainsubcattoproduct extends StatefulWidget {
@@ -69,11 +70,16 @@ class _MainsubcattoproductState extends State<Mainsubcattoproduct> {
 
     setState(() => isLoading = true);
 
+    if (selecteddata == null || selecteddata is! Map) {
+      setState(() => isLoading = false);
+      return;
+    }
+
     var data = {
       "action": "get_productlist_by_maincategoryid",
       "accesskey": "90336",
       "token": accesstoken,
-      "main_category_id": selecteddata['main_category_id'].toString(),
+      "main_category_id": selecteddata['main_category_id']?.toString() ?? "",
     };
 
     final response = await Productapi().getMainSubCattoProduct(data);
@@ -143,7 +149,8 @@ class _MainsubcattoproductState extends State<Mainsubcattoproduct> {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => Cart(selected_data : selecteddata,selecteddata_title : selecteddata_title))).then((_) => loadCartQty());
                 },
               ),
-              if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+              // if (cartQty.values.fold(0, (sum, qty) => sum + qty) > 0)
+              if (cartQty.length > 0)
                 Positioned(
                   right: 6,
                   top: 6,
@@ -154,7 +161,8 @@ class _MainsubcattoproductState extends State<Mainsubcattoproduct> {
                       shape: BoxShape.circle,
                     ),
                     child: Text(
-                      cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                      // cartQty.values.fold(0, (sum, qty) => sum + qty).toString(),
+                       cartQty.length.toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -164,59 +172,234 @@ class _MainsubcattoproductState extends State<Mainsubcattoproduct> {
             ]
         ),
 
-        body: isLoading
-            ?  Center(child: CircularProgressIndicator(color: custom_color.app_color,))
-            : (subcaragory_product == null || subcaragory_product.isEmpty)
-                ? const Center(child: Text("No Data Found"))
-                : GridView.builder(
-
-                    padding: const EdgeInsets.all(15),
-
-                    itemCount: subcaragory_product.length,
-
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 15,
-                      crossAxisSpacing: 15,
-                      childAspectRatio: .78,
+        body: SafeArea(
+          child: isLoading
+              ? _buildShimmer()
+              : (subcaragory_product == null || subcaragory_product.isEmpty)
+                  ? const Center(child: Text("No Data Found"))
+                  // : GridView.builder(
+          
+                  //     padding: const EdgeInsets.all(15),
+          
+                  //     itemCount: subcaragory_product.length,
+          
+                  //     gridDelegate:
+                  //         const SliverGridDelegateWithFixedCrossAxisCount(
+                  //       // crossAxisCount: 2,
+                  //       // mainAxisSpacing: 15,
+                  //       // crossAxisSpacing: 15,
+                  //       // childAspectRatio: .78,
+                  //        crossAxisCount: 2,
+                  // mainAxisSpacing: 10,
+                  // crossAxisSpacing: 10,
+                  // childAspectRatio: 0.55,
+                  //     ),
+          
+                  //     itemBuilder: (context, index) {
+          
+                  //       var p = subcaragory_product[index];
+          
+                  //       List vars = p['vars'] ?? [];
+          
+                  //       double minPrice = 0;
+                  //       double maxPrice = 0;
+          
+                  //       if (vars.isNotEmpty) {
+          
+                  //         List prices = vars
+                  //             .map((v) => double.tryParse(
+                  //                     v['discounted_price'].toString()) ??
+                  //                 0)
+                  //             .toList();
+          
+                  //         prices.sort();
+          
+                  //         minPrice = prices.first;
+                  //         maxPrice = prices.last;
+                  //       }
+          
+                  //       bool available =
+                  //           vars.any((v) => v['stock_status'] != "Sold Out");
+          
+                  //       return buildProductCard(
+                  //           p, vars, minPrice, maxPrice, available);
+                  //     },
+                  //   ),
+                   : GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      itemCount: subcaragory_product.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.55,
+                      ),
+                      itemBuilder: (context, index) {
+                        var p = subcaragory_product[index];
+                        List vars = p['vars'] ?? [];
+                        double minPrice = 0;
+                        double maxPrice = 0;
+                        if (vars.isNotEmpty) {
+                          List prices = vars
+                              .map((v) => double.tryParse(v['discounted_price'].toString()) ?? 0)
+                              .toList();
+                          prices.sort();
+                          minPrice = prices.first;
+                          maxPrice = prices.last;
+                        }
+                        bool available = vars.any((v) => v['stock_status'] == "Available");
+                        return buildProductCard(p, vars, minPrice, maxPrice, available);
+                      },
                     ),
-
-                    itemBuilder: (context, index) {
-
-                      var p = subcaragory_product[index];
-
-                      List vars = p['vars'] ?? [];
-
-                      double minPrice = 0;
-                      double maxPrice = 0;
-
-                      if (vars.isNotEmpty) {
-
-                        List prices = vars
-                            .map((v) => double.tryParse(
-                                    v['discounted_price'].toString()) ??
-                                0)
-                            .toList();
-
-                        prices.sort();
-
-                        minPrice = prices.first;
-                        maxPrice = prices.last;
-                      }
-
-                      bool available =
-                          vars.any((v) => v['stock_status'] != "Sold Out");
-
-                      return buildProductCard(
-                          p, vars, minPrice, maxPrice, available);
-                    },
-                  ),
+        ),
       ),
     );
   }
 
-  Widget buildProductCard(
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(15),
+        itemCount: 6,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 15,
+          crossAxisSpacing: 15,
+          childAspectRatio: .78,
+        ),
+        itemBuilder: (_, __) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(height: 45, color: Colors.white),
+                const SizedBox(height: 6),
+                Container(width: 80, height: 14, color: Colors.white),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildProductCard(var p, List vars, double minPrice, double maxPrice, bool available) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    bool hasDiscount = vars.isNotEmpty && vars[0]['disc_amt'] != "0";
+
+    return GestureDetector(
+      onTap: () {
+         storage.setItem('mainsubcattoproduct', "mainsubcattoproduct");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title: selecteddata,),
+        ),
+      );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 12, offset: const Offset(0, 4))],
+          border: Border(
+            right: BorderSide(color: Colors.grey.shade300, width: 3),
+            bottom: BorderSide(color: Colors.grey.shade300, width: 3),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 200,
+              width: double.infinity,
+              child: Center(child: safeNetworkImage(p['prod_img'], fit: BoxFit.contain)),
+            ),
+            SizedBox(height: screenHeight*0.01,),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 36,
+                      child: Text(p['name'] ?? "", maxLines: 2, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    ),
+                   SizedBox(height: screenHeight*0.01,),
+                    SizedBox(
+                      height: 20,
+                      child: Row(children: [
+                        Text("₹${minPrice.toStringAsFixed(0)}",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: custom_color.app_color)),
+                        const SizedBox(width: 6),
+                        if (hasDiscount && vars.isNotEmpty)
+                          Text("₹${vars[0]['price']}",
+                              style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 11)),
+                      ]),
+                    ),
+                    // const Spacer(),
+                    SizedBox(height: screenHeight*0.01,),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 34,
+                      child: ElevatedButton(
+                        onPressed: available
+                            ? () {
+                                 storage.setItem('mainsubcattoproduct', "mainsubcattoproduct");
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Maincategoryproductdetails(selected_data: p,selecteddata_title: selecteddata,),
+                                    ),
+                                  );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: available ? custom_color.button_color : Colors.grey,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: Text(available ? "Buy Now" : "Unavailable",
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildProductCard1(
       var p, List vars, double minPrice, double maxPrice, bool available) {
 String sizeText = "";
 String variantId = vars.isNotEmpty
@@ -267,34 +450,43 @@ if (vars.isNotEmpty) {
         //     )
         //   ],
         // ),
-decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
+// decoration: BoxDecoration(
+//     color: Colors.white,
+//     borderRadius: BorderRadius.circular(18),
 
-    // Right & Bottom light shadow
-    boxShadow: [
-      BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
+//     // Right & Bottom light shadow
+//     boxShadow: [
+//       BoxShadow(
+//               color: Colors.black.withOpacity(.05),
+//               blurRadius: 12,
+//               offset: const Offset(0, 4),
+//             )
         
-    ],
+//     ],
 
-    // Optional border for sharp edge effect
-    border: Border(
-      right: BorderSide(
-        color: Colors.grey.shade300,
-        // color: custom_color.app_color.withOpacity(0.3),
-        width: 3,
+//     // Optional border for sharp edge effect
+//     border: Border(
+//       right: BorderSide(
+//         color: Colors.grey.shade300,
+//         // color: custom_color.app_color.withOpacity(0.3),
+//         width: 3,
+//       ),
+//       bottom: BorderSide(
+//         color: Colors.grey.shade300,
+//         // color: custom_color.app_color.withOpacity(0.3), 
+//         width: 3,
+//       ),
+//     ),
+//   ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 12, offset: const Offset(0, 4))],
+        border: Border(
+          right: BorderSide(color: Colors.grey.shade300, width: 3),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 3),
+        ),
       ),
-      bottom: BorderSide(
-        color: Colors.grey.shade300,
-        // color: custom_color.app_color.withOpacity(0.3), 
-        width: 3,
-      ),
-    ),
-  ),
         child: Padding(
           padding: const EdgeInsets.all(10),
 
@@ -378,9 +570,8 @@ if (sizeText.isNotEmpty)
   width: double.infinity,
   height: 34,
   child: (vars != null &&
-        // (vars[0]['stock_status'] == "Sold Out" ||
-        //  vars[0]['stock_status'] == "No Stock" ||vars[0]['stock_status'] == "Shop Closed"))?
-                 (vars[0]['stock_status'] != "Available"))?
+                //  (vars[0]['stock_status'] != "Available"))?
+                (vars.isNotEmpty && vars[0]['stock_status'] != "Available"))?
                         ElevatedButton(
                          
           onPressed: null,
