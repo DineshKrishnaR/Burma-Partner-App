@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Deliverypolicy extends StatefulWidget {
@@ -85,20 +86,8 @@ final LocalStorage storage = new LocalStorage('app_store');
         ),
         body: SafeArea(
           child: isLoading
-            ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/images/AppLogo.png",
-                    width: 100,
-                    height: 100,
-                  ),
-                  const SizedBox(height: 20),
-                   CircularProgressIndicator(color: custom_color.app_color,),
-                ],
-              ),
-            ) : delivery_policy == null || delivery_policy.toString().isEmpty
+            ? _buildShimmer()
+            : delivery_policy == null || delivery_policy.toString().isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -117,6 +106,45 @@ final LocalStorage storage = new LocalStorage('app_store');
         ),
       ));
   }
+  Widget _buildShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(15),
+              width: double.infinity,
+              height: sh * 0.22,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(8, (i) => Padding(
+                  padding: EdgeInsets.only(bottom: sh * 0.015),
+                  child: Container(
+                    width: i % 3 == 0 ? sw * 0.6 : double.infinity,
+                    height: sh * 0.016,
+                    color: Colors.white,
+                  ),
+                )),
+              ),
+            ),
+            SizedBox(height: sh * 0.03),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildContent() {
   return SingleChildScrollView(
     child: Column(

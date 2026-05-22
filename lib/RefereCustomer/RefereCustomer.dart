@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
-
 class Referecustomer extends StatefulWidget {
   const Referecustomer({super.key});
 
@@ -122,21 +122,8 @@ void loadMoreData() {
         ),
         body: SafeArea(
           child: isLoading
-            ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/images/AppLogo.png",
-                    width: 100,
-                    height: 100,
-                  ),
-                  const SizedBox(height: 20),
-                   CircularProgressIndicator(color: custom_color.app_color,),
-                ],
-              ),
-            )
-             : customer_list.isEmpty
+            ? _buildShimmer()
+            : customer_list.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -176,6 +163,43 @@ void loadMoreData() {
           backgroundColor: custom_color.app_color,
         ),
       ));
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: 8,
+        itemBuilder: (_, __) => Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              const CircleAvatar(radius: 26, backgroundColor: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(width: double.infinity, height: 14, color: Colors.white),
+                    const SizedBox(height: 8),
+                    Container(width: 100, height: 12, color: Colors.white),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(width: 80, height: 30, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _customerCard(Map item) {

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Requestwithdrawal extends StatefulWidget {
@@ -73,6 +74,75 @@ class _RequestwithdrawalState extends State<Requestwithdrawal>
       await storage.setItem('wallet_amount', response);
     }
     setState(() => isLoading = false);
+  }
+
+  Widget _buildBalanceShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          children: [
+            Container(width: sw * 0.16, height: sw * 0.16, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            SizedBox(width: sw * 0.04),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(width: sw * 0.3, height: sh * 0.015, color: Colors.white),
+                SizedBox(height: sh * 0.01),
+                Container(width: sw * 0.35, height: sh * 0.025, color: Colors.white),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: sw * 0.45, height: sh * 0.022, color: Colors.white),
+              SizedBox(height: sh * 0.025),
+              Container(width: sw * 0.25, height: sh * 0.016, color: Colors.white),
+              SizedBox(height: sh * 0.012),
+              Container(width: double.infinity, height: sh * 0.07, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14))),
+              SizedBox(height: sh * 0.015),
+              Row(
+                children: List.generate(4, (_) => Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  width: sw * 0.14,
+                  height: sh * 0.04,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                )),
+              ),
+              SizedBox(height: sh * 0.035),
+              Container(width: double.infinity, height: sh * 0.065, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   String get _balanceText {
@@ -167,7 +237,9 @@ class _RequestwithdrawalState extends State<Requestwithdrawal>
                   ),
 
                   // Balance card
-                  FadeTransition(
+                  isLoading
+                    ? _buildBalanceShimmer()
+                    : FadeTransition(
                     opacity: _fadeAnim,
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -236,7 +308,9 @@ class _RequestwithdrawalState extends State<Requestwithdrawal>
 
                   // Form card
                   Expanded(
-                    child: FadeTransition(
+                    child: isLoading
+                      ? _buildFormShimmer()
+                      : FadeTransition(
                       opacity: _fadeAnim,
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),

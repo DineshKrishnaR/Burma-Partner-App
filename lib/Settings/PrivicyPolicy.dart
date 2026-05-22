@@ -5,6 +5,7 @@ import 'package:burmapartner/Settings/AboutApi.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Privicypolicy extends StatefulWidget {
@@ -150,21 +151,7 @@ class _PrivicypolicyState extends State<Privicypolicy> {
         body: SafeArea(
 
           child: isLoading
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        "assets/images/AppLogo.png",
-                        width: 100,
-                        height: 100,
-                      ),
-                      const SizedBox(height: 20),
-                       CircularProgressIndicator(color: custom_color.app_color,),
-                    ],
-                  ),
-                )
-
+              ? _buildShimmer()
               : sections.isEmpty
 
                   /// NO DATA UI
@@ -309,6 +296,54 @@ class _PrivicypolicyState extends State<Privicypolicy> {
                         ],
                       ),
                     ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(15),
+              width: double.infinity,
+              height: sh * 0.22,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+            ),
+            ...List.generate(4, (_) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(width: sw * 0.11, height: sw * 0.11, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10))),
+                  SizedBox(width: sw * 0.03),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: List.generate(3, (i) => Padding(
+                        padding: EdgeInsets.only(bottom: sh * 0.012),
+                        child: Container(
+                          width: i == 2 ? sw * 0.5 : double.infinity,
+                          height: sh * 0.015,
+                          color: Colors.white,
+                        ),
+                      )),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+            SizedBox(height: sh * 0.03),
+          ],
         ),
       ),
     );

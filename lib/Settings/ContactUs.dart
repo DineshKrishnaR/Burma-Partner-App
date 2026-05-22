@@ -5,6 +5,8 @@ import 'package:burmapartner/Settings/AboutApi.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Contactus extends StatefulWidget {
@@ -88,21 +90,8 @@ final LocalStorage storage = new LocalStorage('app_store');
         ),
         body: SafeArea(
   child: isLoading
-      ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/images/AppLogo.png",
-                    width: 100,
-                    height: 100,
-                  ),
-                  const SizedBox(height: 20),
-                   CircularProgressIndicator(color: custom_color.app_color,),
-                ],
-              ),
-            )
-             : contacy_us == null || contacy_us.toString().isEmpty
+      ? _buildShimmer()
+      : contacy_us == null || contacy_us.toString().isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -200,11 +189,19 @@ final LocalStorage storage = new LocalStorage('app_store');
                                 ),
                               ),
                               const SizedBox(height: 5),
-                              Text(
-                                contacy_us?['mobile'] ?? "",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              GestureDetector(
+                                onTap: () {
+                                  final phone = contacy_us?['mobile'] ?? "";
+                                  if (phone.isNotEmpty) launchUrl(Uri(scheme: 'tel', path: phone));
+                                },
+                                child: Text(
+                                  contacy_us?['mobile'] ?? "",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
                               ),
                             ],
@@ -233,11 +230,19 @@ final LocalStorage storage = new LocalStorage('app_store');
                                 ),
                               ),
                               const SizedBox(height: 5),
-                              Text(
-                                contacy_us?['mail']?.trim() ?? "",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                              GestureDetector(
+                                onTap: () {
+                                  final email = contacy_us?['mail']?.trim() ?? "";
+                                  if (email.isNotEmpty) launchUrl(Uri(scheme: 'mailto', path: email));
+                                },
+                                child: Text(
+                                  contacy_us?['mail']?.trim() ?? "",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
                               ),
                             ],
@@ -262,12 +267,21 @@ final LocalStorage storage = new LocalStorage('app_store');
                                 "Address",
                                 style: TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                               ),
                               const SizedBox(height: 5),
+                              // Text(
+                              //   contacy_us?['address']?.trim() ?? "",
+                              //   style: const TextStyle(
+                              //     fontSize: 15,
+                              //   ),
+                              // ),
                               Text(
-                                contacy_us?['address']?.trim() ?? "",
+                                ((contacy_us?['address'] ?? "").toString().isNotEmpty)
+                                    ? (contacy_us!['address'][0].toUpperCase() +
+                                        contacy_us['address'].substring(1).toLowerCase())
+                                    : "",
                                 style: const TextStyle(
                                   fontSize: 15,
                                 ),
@@ -287,5 +301,55 @@ final LocalStorage storage = new LocalStorage('app_store');
         ),
 ),
       ));
+  }
+
+  Widget _buildShimmer() {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(15),
+              width: double.infinity,
+              height: sh * 0.22,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+              child: Column(
+                children: List.generate(3, (i) => Padding(
+                  padding: EdgeInsets.only(bottom: sh * 0.025),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: sw * 0.06, height: sw * 0.06, color: Colors.white),
+                      SizedBox(width: sw * 0.04),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(width: sw * 0.3, height: sh * 0.014, color: Colors.white),
+                            SizedBox(height: sh * 0.01),
+                            Container(width: sw * 0.55, height: sh * 0.02, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+              ),
+            ),
+            SizedBox(height: sh * 0.03),
+          ],
+        ),
+      ),
+    );
   }
 }

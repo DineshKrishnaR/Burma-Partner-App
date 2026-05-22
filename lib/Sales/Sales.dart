@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import '../Common/colors.dart' as custom_color;
 
 class Sales extends StatefulWidget {
@@ -140,8 +141,8 @@ class _SalesState extends State<Sales> {
   });
 }
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -163,137 +164,247 @@ class _SalesState extends State<Sales> {
             ),
           ),
 
-  body: Column(
-    children: [
-       SizedBox(height: screenHeight*0.02),
-
-      // 🔥 FILTER BUTTONS
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            buildFilter("today", "Today"),
-            buildFilter("weekly", "Week"),
-            buildFilter("monthly", "Month"),
-            buildFilter("yearly", "Year"),
-          ],
+  body: SafeArea(
+    child: Column(
+      children: [
+        SizedBox(height: sh * 0.02),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: sw * 0.02),
+          child: Row(
+            children: [
+              buildFilter("today", "Today"),
+              buildFilter("weekly", "Week"),
+              buildFilter("monthly", "Month"),
+              buildFilter("yearly", "Year"),
+            ],
+          ),
         ),
-      ),
-
-       SizedBox(height: screenHeight*0.02),
-
-      // 🔥 CONTENT
-      Expanded(
-        child: isLoading
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/images/AppLogo.png",
-                      width: 100,
-                      height: 100,
+        SizedBox(height: sh * 0.02),
+    
+        // 🔥 CONTENT
+        Expanded(
+          child: isLoading
+              ? _buildShimmer()
+              : sales_list.isEmpty
+                  ? buildEmptyUI()
+                  // : ListView.builder(
+                  //     itemCount: sales_list.length,
+                  //     itemBuilder: (context, index) {
+                  //       var item = sales_list[index];
+                  //       // return buildSalesCard(item);
+                  //        return GestureDetector(
+                  //         onTap: () {
+                  //           print("Clicked item index: $index");
+                  //           print("Product: ${item['product_name']}");
+                  //         },
+                  //         child: buildSalesCard(item),
+                  //       );
+                  //     },
+                  //   ),
+                  :SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        /// 📊 CHART
+                        buildChart(),
+                  
+                        /// 🏆 LEADERBOARD (STATIC or API later)
+                        buildLeaderboard(),
+                  
+                        /// 📦 PRODUCTS
+                        ListView.builder(
+                          itemCount: sales_list.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return buildProductCard(sales_list[index]);
+                          },
+                        ),
+                      ],
                     ),
-                     SizedBox(height: screenHeight*0.02),
-                     CircularProgressIndicator(color: custom_color.app_color,),
-                  ],
-                ),
-             )
-            : sales_list.isEmpty
-                ? buildEmptyUI()
-                // : ListView.builder(
-                //     itemCount: sales_list.length,
-                //     itemBuilder: (context, index) {
-                //       var item = sales_list[index];
-                //       // return buildSalesCard(item);
-                //        return GestureDetector(
-                //         onTap: () {
-                //           print("Clicked item index: $index");
-                //           print("Product: ${item['product_name']}");
-                //         },
-                //         child: buildSalesCard(item),
-                //       );
-                //     },
-                //   ),
-                :SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      /// 📊 CHART
-                      buildChart(),
-                
-                      /// 🏆 LEADERBOARD (STATIC or API later)
-                      buildLeaderboard(),
-                
-                      /// 📦 PRODUCTS
-                      ListView.builder(
-                        itemCount: sales_list.length,
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return buildProductCard(sales_list[index]);
-                        },
-                      ),
-                    ],
                   ),
-                ),
-      ),
-    ],
+        ),
+      ],
+    ),
   ),
-  bottomNavigationBar: Container(
-  padding: EdgeInsets.all(16),
-  color: custom_color.app_color,
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text("Total Sales",
-          style: TextStyle(color: Colors.white, fontSize: 16)),
-      Text("Rs.${totalSales.toStringAsFixed(0)}",
-          style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold)),
-    ],
-  ),
-),
+  bottomNavigationBar: (!isLoading && sales_list.isNotEmpty)
+    ? SafeArea(
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: sw * 0.04,
+            vertical: sh * 0.016,
+          ),
+          decoration: BoxDecoration(
+            color: custom_color.app_color,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: Offset(0, -2),
+              )
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bar_chart, color: Colors.white70, size: sw * 0.05),
+                  SizedBox(width: sw * 0.02),
+                  Text("Total Sales",
+                      style: TextStyle(color: Colors.white70, fontSize: sw * 0.038)),
+                ],
+              ),
+              Text("Rs.${totalSales.toStringAsFixed(0)}",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: sw * 0.045,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      )
+    : null,
 ),
       );
   }
-  Widget buildFilter(String value, String label) {
-  bool isSelected = selectedReport == value;
+  Widget _buildShimmer() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sw = constraints.maxWidth;
+        final sh = MediaQuery.of(context).size.height;
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: sh * 0.02),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Chart skeleton
+                Container(
+                  width: double.infinity,
+                  height: sh * 0.25,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                SizedBox(height: sh * 0.02),
+                // Leaderboard title
+                Container(width: sw * 0.35, height: sh * 0.022, color: Colors.white),
+                SizedBox(height: sh * 0.015),
+                // Leaderboard cards
+                ...List.generate(3, (_) => Container(
+                  margin: EdgeInsets.only(bottom: sh * 0.015),
+                  padding: EdgeInsets.all(sw * 0.04),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(width: sw * 0.08, height: sw * 0.08, color: Colors.white),
+                      SizedBox(width: sw * 0.03),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(width: sw * 0.12, height: sh * 0.014, color: Colors.white),
+                          SizedBox(height: sh * 0.008),
+                          Container(width: sw * 0.08, height: sh * 0.018, color: Colors.white),
+                        ],
+                      ),
+                      const Spacer(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(width: sw * 0.28, height: sh * 0.018, color: Colors.white),
+                          SizedBox(height: sh * 0.008),
+                          Container(width: sw * 0.2, height: sh * 0.014, color: Colors.white),
+                          SizedBox(height: sh * 0.008),
+                          Container(width: sw * 0.15, height: sh * 0.016, color: Colors.white),
+                        ],
+                      ),
+                    ],
+                  ),
+                )),
+                SizedBox(height: sh * 0.01),
+                // Product cards
+                ...List.generate(4, (_) => Container(
+                  margin: EdgeInsets.only(bottom: sh * 0.015),
+                  padding: EdgeInsets.all(sw * 0.03),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: sw * 0.14,
+                        height: sw * 0.14,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      SizedBox(width: sw * 0.03),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(width: double.infinity, height: sh * 0.018, color: Colors.white),
+                            SizedBox(height: sh * 0.008),
+                            Container(width: sw * 0.3, height: sh * 0.014, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: sw * 0.03),
+                      Container(width: sw * 0.15, height: sh * 0.02, color: Colors.white),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
+Widget buildFilter(String value, String label) {
+  final sw = MediaQuery.of(context).size.width;
+  final sh = MediaQuery.of(context).size.height;
+  bool isSelected = selectedReport == value;
   return GestureDetector(
     onTap: () {
-      setState(() {
-        selectedReport = value;
-      });
+      setState(() => selectedReport = value);
       getSalesReport();
       getLeaderBoard();
     },
     child: Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      margin: EdgeInsets.symmetric(horizontal: sw * 0.02),
+      padding: EdgeInsets.symmetric(horizontal: sw * 0.05, vertical: sh * 0.015),
       decoration: BoxDecoration(
         color: isSelected ? custom_color.app_color : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)
         ],
       ),
       child: Column(
         children: [
           Icon(Icons.calendar_today,
+              size: sw * 0.055,
               color: isSelected ? Colors.white : custom_color.app_color),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : custom_color.app_color,
-              fontWeight: FontWeight.w600,
-            ),
-          )
+          SizedBox(height: sh * 0.005),
+          Text(label,
+              style: TextStyle(
+                fontSize: sw * 0.035,
+                color: isSelected ? Colors.white : custom_color.app_color,
+                fontWeight: FontWeight.w600,
+              )),
         ],
       ),
     ),
@@ -608,9 +719,11 @@ Widget buildLeader(String rank, String name, String city, Color color) {
   );
 }
 Widget buildProductCard(dynamic item) {
+  final sw = MediaQuery.of(context).size.width;
+  final sh = MediaQuery.of(context).size.height;
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    padding: EdgeInsets.all(12),
+    margin: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: sh * 0.01),
+    padding: EdgeInsets.all(sw * 0.03),
     decoration: BoxDecoration(
       border: Border.all(color: custom_color.app_color),
       borderRadius: BorderRadius.circular(12),
@@ -618,33 +731,28 @@ Widget buildProductCard(dynamic item) {
     child: Row(
       children: [
         Container(
-          width: 60,
-          height: 60,
+          width: sw * 0.14,
+          height: sw * 0.14,
           decoration: BoxDecoration(
             color: Colors.blue.shade100,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.image),
+          child: const Icon(Icons.image),
         ),
-
-        SizedBox(width: 10),
-
+        SizedBox(width: sw * 0.03),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(item['product_name'] ?? "",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
-
-              Text("No. of Pads : ${item['sum_of_qty']}"),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: sw * 0.04)),
+              Text("No. of Pads : ${item['sum_of_qty']}",
+                  style: TextStyle(fontSize: sw * 0.033)),
             ],
           ),
         ),
-
         Text("₹${item['final_amt']}",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 16)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: sw * 0.04)),
       ],
     ),
   );

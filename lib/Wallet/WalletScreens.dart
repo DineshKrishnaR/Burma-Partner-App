@@ -83,171 +83,173 @@ class _WalletscreensState extends State<Walletscreens> {
             },
           ),
         ),
-        body: isLoading
-     ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/images/AppLogo.png",
-                    width: 100,
-                    height: 100,
-                  ),
-                  const SizedBox(height: 20),
-                   CircularProgressIndicator(color: custom_color.app_color,),
-                ],
-              ),
-            )
-    : wallet_transactions == null || wallet_transactions.isEmpty
-        ? Center(child: Text("No Transactions"))
-        : SingleChildScrollView(
-            child: Column(
-              children: [
-
-                /// 🔥 WALLET BALANCE CARD
-                Container(
-                  margin: EdgeInsets.all(15),
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(.1),
-                        blurRadius: 10,
-                      )
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.account_balance_wallet,
-                          color: custom_color.app_color, size: 30),
-                      SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Wallet Balance :",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold)),
-                          SizedBox(height: 5),
-                          Text(
-                            "Rs.${getBalance()}",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: custom_color.app_color,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
+        body: SafeArea(
+          child: isLoading
+               ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/images/AppLogo.png",
+                      width: 100,
+                      height: 100,
+                    ),
+                    const SizedBox(height: 20),
+                     CircularProgressIndicator(color: custom_color.app_color,),
+                  ],
                 ),
-
-                /// 🔥 TITLE
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Recent Transaction",
-                      style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+              )
+              : wallet_transactions == null || wallet_transactions.isEmpty
+          ? Center(child: Text("No Transactions"))
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+          
+                  /// 🔥 WALLET BALANCE CARD
+                  Container(
+                    margin: EdgeInsets.all(15),
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(.1),
+                          blurRadius: 10,
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.account_balance_wallet,
+                            color: custom_color.app_color, size: 30),
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Wallet Balance :",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                            SizedBox(height: 5),
+                            Text(
+                              "Rs.${getBalance()}",
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: custom_color.app_color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          ],
+                        )
+                      ],
                     ),
                   ),
-                ),
-
-                SizedBox(height: 10),
-
-                /// 🔥 TRANSACTION LIST
-                ListView.builder(
-                  itemCount: wallet_transactions.length,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    var txn = wallet_transactions[index];
-
-                    bool isDebit = txn['type'] == "debit";
-
-                    return Container(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                      padding: EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.08),
-                            blurRadius: 10,
-                          )
-                        ],
+          
+                  /// 🔥 TITLE
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Recent Transaction",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          /// 🔥 TOP ROW
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor:
-                                    custom_color.app_color.withOpacity(.1),
-                                child: Icon(
-                                  isDebit
-                                      ? Icons.arrow_upward
-                                      : Icons.arrow_downward,
-                                  color: custom_color.app_color,
+                    ),
+                  ),
+          
+                  SizedBox(height: 10),
+          
+                  /// 🔥 TRANSACTION LIST
+                  ListView.builder(
+                    itemCount: wallet_transactions.length,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      var txn = wallet_transactions[index];
+          
+                      bool isDebit = txn['type'] == "debit";
+          
+                      return Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(.08),
+                              blurRadius: 10,
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+          
+                            /// 🔥 TOP ROW
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor:
+                                      custom_color.app_color.withOpacity(.1),
+                                  child: Icon(
+                                    isDebit
+                                        ? Icons.arrow_upward
+                                        : Icons.arrow_downward,
+                                    color: custom_color.app_color,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 10),
-
-                              Expanded(
-                                child: Text(
-                                  txn['message'] ?? "",
+                                SizedBox(width: 10),
+          
+                                Expanded(
+                                  child: Text(
+                                    txn['message'] ?? "",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                ),
+          
+                                Text(
+                                  "Rs.${txn['amount']}",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: custom_color.app_color,
+                                  ),
                                 ),
-                              ),
-
-                              Text(
-                                "Rs.${txn['amount']}",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: custom_color.app_color,
+                              ],
+                            ),
+          
+                            SizedBox(height: 10),
+          
+                            /// 🔥 BOTTOM ROW
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Reference : ${txn['refer_id'] ?? ''}",
+                                  style: TextStyle(fontSize: 13),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: 10),
-
-                          /// 🔥 BOTTOM ROW
-                          Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Reference : ${txn['refer_id'] ?? ''}",
-                                style: TextStyle(fontSize: 13),
-                              ),
-                              Text(
-                                formatDate(txn['date_created']),
-                                style: TextStyle(fontSize: 13),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                )
-              ],
+                                Text(
+                                  formatDate(txn['date_created']),
+                                  style: TextStyle(fontSize: 13),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                ],
+              ),
             ),
-          ),
+        ),
       ));
   }
   String getBalance() {

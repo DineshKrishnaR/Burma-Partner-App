@@ -1,5 +1,5 @@
 import 'package:burmapartner/RefereCustomer/RefereCusApi.dart';
-import 'package:burmapartner/RefereCustomer/RefereCustomer.dart';
+import 'package:burmapartner/RefereCustomer/Referecustomer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
