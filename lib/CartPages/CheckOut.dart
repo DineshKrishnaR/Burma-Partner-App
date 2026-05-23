@@ -1195,11 +1195,18 @@ onPopInvoked: (didPop) {
       const SizedBox(width: 12),
 
       ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: custom_color.button_color,
-          padding: const EdgeInsets.symmetric(
-              horizontal: 24, vertical: 12),
-        ),
+        // style: ElevatedButton.styleFrom(
+        //   backgroundColor: custom_color.button_color,
+        //   padding: const EdgeInsets.symmetric(
+        //       horizontal: 24, vertical: 12),
+        // ),
+         style: ElevatedButton.styleFrom(
+                backgroundColor: custom_color.button_color,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                horizontal: 24, vertical: 12),
+                elevation: 0,
+         ),
      onPressed: () async {
   if (finalTotal == 0) {
 
@@ -1774,36 +1781,82 @@ Future<void> verifyPayment(String paymentId, String razorOrderId, String signatu
     }
   }
 }
+// void _handlePaymentError(PaymentFailureResponse response) {
+//   setState(() {
+//     isPaying = false;
+//     isProcessingPayment = false;
+//   });
+  
+//   debugPrint("Payment Error: ${response.code} - ${response.message}");
+  
+//   String errorMessage = "Payment failed";
+  
+//   if (response.code == 0) {
+//     errorMessage = "Payment cancelled by user";
+//   } else if (response.code == 2) {
+//     errorMessage = "Network error. Please check your connection";
+//   } else {
+//     errorMessage = response.message ?? "Payment failed";
+//   }
+  
+//   Fluttertoast.showToast(msg: errorMessage);
+  
+//   if (mounted) {
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(
+//         builder: (_) => PaymentFailedScreen(
+//           message: errorMessage,
+//         ),
+//       ),
+//     );
+//   }
+// }
 void _handlePaymentError(PaymentFailureResponse response) {
   setState(() {
     isPaying = false;
     isProcessingPayment = false;
   });
-  
+
   debugPrint("Payment Error: ${response.code} - ${response.message}");
-  
-  String errorMessage = "Payment failed";
-  
-  if (response.code == 0) {
-    errorMessage = "Payment cancelled by user";
-  } else if (response.code == 2) {
-    errorMessage = "Network error. Please check your connection";
-  } else {
-    errorMessage = response.message ?? "Payment failed";
+  debugPrint("Full Error: ${response.error}");
+
+  String errorMessage;
+
+  switch (response.code) {
+    case Razorpay.PAYMENT_CANCELLED:
+      errorMessage = "Payment cancelled by user";
+      break;
+
+    case Razorpay.NETWORK_ERROR:
+      errorMessage = "Network error. Please check your internet connection";
+      break;
+
+    case Razorpay.INVALID_OPTIONS:
+      errorMessage = "Invalid payment configuration";
+      break;
+
+    default:
+      errorMessage =
+      (response.message != null &&
+          response.message!.trim().isNotEmpty &&
+          response.message != "undefined")
+          ? response.message!
+          : "Payment failed. Please try again";
   }
-  
+
   Fluttertoast.showToast(msg: errorMessage);
-  
-  if (mounted) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaymentFailedScreen(
-          message: errorMessage,
-        ),
+
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PaymentFailedScreen(
+        message: errorMessage,
       ),
-    );
-  }
+    ),
+  );
 }
 void _handleExternalWallet(ExternalWalletResponse response) {
   debugPrint("External Wallet Selected: ${response.walletName}");

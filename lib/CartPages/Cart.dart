@@ -2114,7 +2114,8 @@ void showAddAddressDialog(StateList) {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: custom_color.app_color,
+          // color: custom_color.app_color,
+          color: Colors.grey,
           width: 1.5,
         ),
       ),
@@ -2122,7 +2123,8 @@ void showAddAddressDialog(StateList) {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: custom_color.app_color,
+          // color: custom_color.app_color,
+           color: Colors.grey,
           width: 2,
         ),
       ),
@@ -2459,7 +2461,7 @@ Widget _editField(
   bool required = true,
 }) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: 16),
+    padding:  EdgeInsets.only(bottom: 16),
     child: TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -2473,11 +2475,13 @@ Widget _editField(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+          // borderSide: BorderSide(color: custom_color.app_color, width: 1.5),
+          borderSide: BorderSide(color: Colors.grey, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: custom_color.app_color, width: 2),
+          // borderSide: BorderSide(color: custom_color.app_color, width: 2),
+          borderSide: BorderSide(color: Colors.grey, width: 1.5),
         ),
       ),
     ),
@@ -3057,7 +3061,7 @@ void showEditAddressDialog(Map<String, dynamic> address, StateSetter setAddressD
                                 "act_type": userResponse["act_type"],
                                 "token": accesstoken,
                               };
-                               if (address['customer_address_id'] == null) {
+                               if (address['customer_address_id'] == null || address['customer_address_id'] == 0) {
                                   Fluttertoast.showToast(msg: "Primary Address cannot be edited");
                                   return;
                                 }

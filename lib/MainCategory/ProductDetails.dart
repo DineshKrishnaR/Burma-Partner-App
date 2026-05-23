@@ -397,19 +397,17 @@ Future<void> addToCart() async {
           activeVariant?['min_order_qty']?.toString() ?? "0") ??
       0;
 
-  /// ❗ MIN QTY CHECK (Correct)
+  /// ❗ MIN QTY CHECK
+  // Adding to cart for the first time: enforce MOQ
   if (currentQty == 0 && newQty > 0 && newQty < minQty) {
-  newQty = minQty;
-  Fluttertoast.showToast(msg: "Minimum order is $minQty");
-}
+    newQty = minQty;
+    Fluttertoast.showToast(msg: "Minimum order is $minQty");
+  }
 
-// if (newQty > 0 && newQty < minQty && newQty < currentQty) {
-//   Fluttertoast.showToast(msg: "Minimum order is $minQty");
-// }
-if (newQty > 0 && newQty < minQty && newQty < currentQty) {
-  Fluttertoast.showToast(msg: "Minimum order is $minQty");
-  return;
-}
+  // Decrementing below MOQ: remove from cart entirely
+  if (newQty > 0 && newQty < minQty && newQty < currentQty) {
+    newQty = 0;
+  }
 
   /// 🚀 Check stock only when qty increases
   if (newQty > currentQty) {
